@@ -1,0 +1,13 @@
+interface cmsis-dap
+
+cmsis_dap_vid_pid 0x03eb 0x2141
+
+set CLOCK_FREQ 1600
+
+transport select swd
+
+set CHIPNAME @TARGET@
+
+gdb_flash_program enable
+
+source [find target/at91samdXX.cfg]
