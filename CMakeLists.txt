@@ -79,68 +79,38 @@ print_section_sizes(${PROJECT_NAME}-app)
 
 # Generate hex and bin outputs from elf file
 create_hex_output(${PROJECT_NAME}-boot)
-create_hex_output(${PROJECT_NAME}-app)
+#create_hex_output(${PROJECT_NAME}-app)
 
 create_bin_output(${PROJECT_NAME}-boot)
-create_bin_output(${PROJECT_NAME}-app)
+#create_bin_output(${PROJECT_NAME}-app)
 
 # Setup gdb
 generate_run_gdb_openocd(${TARGET})
 
-# Create boot loaded application binary
-add_custom_target(${TARGET}-boot-padded.bin
-        ALL DEPENDS ${PROJECT_NAME}-boot.bin ${PROJECT_NAME}-app.bin
-        COMMAND ${CMAKE_OBJCOPY} --pad-to=0x4000 --gap-fill=0xFF -Obinary ${PROJECT_NAME}-boot ${PROJECT_NAME}-boot-padded.bin
-        COMMAND copy /b /Y \"${PROJECT_NAME}-boot-padded.bin\"+\"${PROJECT_NAME}-app.bin\" ${TARGET}-boot-app.bin
-        COMMAND ${CMAKE_OBJCOPY} -I binary -O elf32-little -B arm -S --change-section-address .data=0x00000000 ${TARGET}-boot-app.bin ${TARGET}-boot-app.elf
+
+macro(add_clean_target dir)
+    add_custom_target(clean-${dir} COMMAND ${CMAKE_MAKE_PROGRAM} clean WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${dir})
+endmacro(add_clean_target)
+add_clean_target(build)
+
+add_custom_command(TARGET ${PROJECT_NAME}-app
+        PRE_BUILD
+        COMMAND DEL SAMR35-app.bin SAMR35-app.hex
         WORKING_DIRECTORY build
-        COMMENT "Objcopying ${TARGET} to boot loaded application firmware: ${TARGET}-boot-app.bin")
+        COMMENT "Deleting all auto generated files from elf")
 
-#include(cmake/upload.cmake)
-#gen_upload_target(${TARGET} ${PROJECT_NAME}-app ${TARGET}-boot-app.bin)
+add_custom_command(TARGET ${PROJECT_NAME}-app
+        POST_BUILD
+        DEPENDS ${PROJECT_NAME}-app
+        COMMAND ${CMAKE_OBJCOPY} -Obinary ${PROJECT_NAME}-app ${PROJECT_NAME}-app.bin
+        WORKING_DIRECTORY build
+        COMMENT "Deleting all auto generated files from elf")
 
-
-
-
-
-
-
-
-set(OpenOCD "C:\\msys64\\usr\\bin\\openocd.exe")
-set(GDB_PORT 3333)
-set(OPENOCD_CHIP_CONFIG_COMMANDS
-        -f "C:\\msys64\\usr\\share\\openocd\\scripts\\interface\\cmsis-dap.cfg"
-        -f "C:\\msys64\\usr\\share\\openocd\\scripts\\target\\at91samdXX.cfg"
-        -c "gdb_memory_map disable")
-
-message(NOTICE ${CMAKE_SOURCE_DIR}/cmake/openocd-script.cfg)
-add_custom_target(flash-${PROJECT_NAME}
-        DEPENDS ${TARGET}-boot-padded.bin
-        COMMENT "Flashing ${PROJECT_NAME} with OpenOCD..."
-        COMMAND ${OpenOCD}
-#        ${OPENOCD_CHIP_CONFIG_COMMANDS}
-        -f "${CMAKE_SOURCE_DIR}/cmake/openocd-script.cfg"
-        -c "gdb_memory_map disable")
- #       -c init
- #       -c "reset init"
- #       -c "at91samd bootloader 0"
- #       -c "program ${CMAKE_BINARY_DIR}/build/${TARGET}-boot-app.bin verify reset exit") # reset exit
-
-# create debug target
-add_custom_target(debug-${TARGET_NAME}
-        COMMENT "starting GDB to debug ${TARGET_NAME}..."
-        COMMAND arm-none-eabi-gdb
-        --command=${CMAKE_CURRENT_BINARY_DIR}/openocd-run.gdb
-        ${CMAKE_BINARY_DIR}/build/${PROJECT_NAME}-app)
-
-# also create a target to run GDB server
-add_custom_target(start-gdbserver
-        COMMENT "Starting OpenOCD GDB server"
-        COMMAND
-        ${OpenOCD}
-        ${OPENOCD_CHIP_CONFIG_COMMANDS}
-        -c "gdb_port ${GDB_PORT}"
-        -c init
-        -c "reset init"
-        )
-
+# Create boot loaded application binary
+#add_custom_target(${TARGET}-boot-padded.bin
+#        ALL DEPENDS ${PROJECT_NAME}-boot.bin ${PROJECT_NAME}-app.bin
+#        COMMAND ${CMAKE_OBJCOPY} --pad-to=0x4000 --gap-fill=0xFF -Obinary ${PROJECT_NAME}-boot ${PROJECT_NAME}-boot-padded.bin
+#        COMMAND copy /b /Y \"${PROJECT_NAME}-boot-padded.bin\"+\"${PROJECT_NAME}-app.bin\" ${TARGET}-boot-app.bin
+ #       COMMAND ${CMAKE_OBJCOPY} -I binary -O elf32-little -B arm -S --change-section-address .data=0x00000000 ${TARGET}-boot-app.bin ${TARGET}-boot-app.elf
+ #       WORKING_DIRECTORY build
+  #      COMMENT "Objcopying ${TARGET} to boot loaded application firmware: ${TARGET}-boot-app.bin")

@@ -7,7 +7,7 @@ int main()
 {
     configASF();
 
-    printf("Application loaded V10\r\n");
+    printf("Application loaded v5wehfuehwfuiwhefiuhweiufhewiufhqwueif \r\n");
 
     printf("Break\r\n");
 
