@@ -9,7 +9,7 @@ int main()
 
     printf("Application loaded V0.0.1 \r\n");
 
-    printf("Trigger a break point on me! \r\n");
+    printf("Trigger using a break point on me! \r\n");
 
     while(true);
 }

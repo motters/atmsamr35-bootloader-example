@@ -20,7 +20,7 @@ int main()
     uint32_t* app_check_address_ptr = (uint32_t*) app_check_address;
 
     // Print bootloader variables
-    printf("\r\n\r\n\r\nWelcome to the bootloader!\r\n");
+    printf("\r\n\r\n\r\nWelcome to the bootloader V0.0.1\r\n");
 #if 0
     printf("Bootloader says heey, opening app at %lu\r\n", &__approm_start__);
     printf("start boot %lu\r\n", &__bootrom_start__);
@@ -61,7 +61,7 @@ int main()
 
     // Rebase the vector table base address
     SCB->VTOR = ((uint32_t) app_check_address_ptr & SCB_VTOR_TBLOFF_Msk);
-    printf("VTOR set to application: %d\r\n", ((uint32_t) app_check_address_ptr & SCB_VTOR_TBLOFF_Msk));
+    printf("VTOR set to application at: %d\r\n", ((uint32_t) app_check_address_ptr & SCB_VTOR_TBLOFF_Msk));
 
     // Rebase the stack pointer
     __set_MSP(&app_check_address);

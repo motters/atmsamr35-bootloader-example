@@ -116,7 +116,13 @@ add_custom_command(TARGET ${PROJECT_NAME}-boot
         COMMENT "Generating bin file from boot elf")
 
 # Create a single binary file containing bootloader and application
-add_custom_command(TARGET ${PROJECT_NAME}-boot ${PROJECT_NAME}-app
+add_custom_command(TARGET ${PROJECT_NAME}-app
+        POST_BUILD
+        DEPENDS ${PROJECT_NAME}-boot.bin ${PROJECT_NAME}-app.bin
+        COMMAND copy /b /Y \"${PROJECT_NAME}-boot.bin\"+\"${PROJECT_NAME}-app.bin\" ${PROJECT_NAME}-boot-app.bin
+        WORKING_DIRECTORY build
+        COMMENT "Generating combined bootloader and application binary file with correct offsets")
+add_custom_command(TARGET ${PROJECT_NAME}-boot
         POST_BUILD
         DEPENDS ${PROJECT_NAME}-boot.bin ${PROJECT_NAME}-app.bin
         COMMAND copy /b /Y \"${PROJECT_NAME}-boot.bin\"+\"${PROJECT_NAME}-app.bin\" ${PROJECT_NAME}-boot-app.bin
