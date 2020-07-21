@@ -7,17 +7,9 @@ int main()
 {
     configASF();
 
-    printf("Application loaded v5wehfuehwfuiwhefiuhweiufhewiufhqwueif \r\n");
+    printf("Application loaded V0.0.1 \r\n");
 
-    printf("Break\r\n");
-
-    printf("Break\r\n");
-
-    printf("Break\r\n");
-
-    printf("Break\r\n");
-
-    printf("Break\r\n");
+    printf("Trigger a break point on me! \r\n");
 
     while(true);
 }
