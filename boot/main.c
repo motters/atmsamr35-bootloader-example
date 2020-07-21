@@ -7,6 +7,13 @@
 extern uint32_t _sfixed;
 extern uint32_t _efixed;
 
+void write_firmware(void)
+{
+    // Version   Flash Size [KB]    Number of Pages      Page Size [Bytes]
+    //   J17         128                 2048                  64
+    //   J18         256                 4096                  64
+}
+
 /**
  * Bootloader
  */
@@ -67,6 +74,9 @@ int main()
     __set_MSP(&app_check_address);
     __set_PSP(&app_check_address);
     printf("Main stack point set to: %d; Process stack pointer set to: %d\r\n", __get_MSP(), __get_PSP());
+
+    // Attempt to write to flash
+    write_firmware();
 
     // De-init serial
     printf("Serial will now be de-init & application loaded\r\n--------------------------------------------------\r\n");
