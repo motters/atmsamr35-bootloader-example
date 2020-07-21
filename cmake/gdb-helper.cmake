@@ -22,7 +22,10 @@ endif()
 #---------------------------------------------------------------------------------------
 # Generates a GDB run script for debugging with any supported programmer and openOCD.
 #---------------------------------------------------------------------------------------
-function(generate_run_gdb_openocd TARGET)
-    #get_target_property( TARGET_NAME ${TARGET} NAME )
-    configure_file(cmake/openocd-run.gdb.in ${PROJECT_BINARY_DIR}/openocd-run.gdb @ONLY)
+function(generate_run_gdb_openocd OCD_BIN OCD_OFFSET)
+    # Hex to decimal for bootloader lock
+    math(EXPR ODB_BOOT_LOCK "${BOOTLOADER_OFFSET}" OUTPUT_FORMAT DECIMAL)
+
+    # Output config file
+    configure_file(cmake/openocd-script.cfg ${PROJECT_BINARY_DIR}/openocd-script-${OCD_BIN}.cfg @ONLY)
 endfunction()

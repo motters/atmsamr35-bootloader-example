@@ -24,16 +24,18 @@ endfunction()
 # Creates output in hex format
 #---------------------------------------------------------------------------------------
 function(create_hex_output TARGET)
-    add_custom_target(${TARGET}.hex ALL DEPENDS ${TARGET}
-                      COMMAND ${CMAKE_OBJCOPY} -Oihex ${TARGET} ${TARGET}.hex
-                      WORKING_DIRECTORY build)
+    add_custom_target(${TARGET}.hex ALL
+            DEPENDS ${TARGET}
+            COMMAND ${CMAKE_OBJCOPY} -Oihex ${TARGET} ${TARGET}.hex
+            WORKING_DIRECTORY build)
 endfunction()
 
 #---------------------------------------------------------------------------------------
 # Creates output in binary format
 #---------------------------------------------------------------------------------------
 function(create_bin_output TARGET)
-    add_custom_target(${TARGET}.bin ALL DEPENDS ${TARGET}
-                      COMMAND ${CMAKE_OBJCOPY} -Obinary ${TARGET} ${TARGET}.bin
-                      WORKING_DIRECTORY build)
+    add_custom_target(${TARGET}.bin ALL
+            DEPENDS ${TARGET}
+            COMMAND ${CMAKE_OBJCOPY} -Obinary ${TARGET} ${TARGET}.bin
+            WORKING_DIRECTORY build)
 endfunction()

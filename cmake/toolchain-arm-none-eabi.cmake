@@ -50,7 +50,7 @@ set(CMAKE_CXX_FLAGS "${OBJECT_GEN_FLAGS} " CACHE INTERNAL "C++ Compiler options"
 set(CMAKE_ASM_FLAGS "${OBJECT_GEN_FLAGS} -x assembler-with-cpp " CACHE INTERNAL "ASM Compiler options")
 
 
-set(CMAKE_EXE_LINKER_FLAGS "-mthumb -Wl,-Map=${OutputFileName}.map --specs=nano.specs" CACHE INTERNAL "Linker options")
+set(CMAKE_EXE_LINKER_FLAGS "-mthumb -Wl,-Map=${PROJECT_NAME}.map --specs=nano.specs" CACHE INTERNAL "Linker options")
 
 #---------------------------------------------------------------------------------------
 # Set debug/release build configuration Options
