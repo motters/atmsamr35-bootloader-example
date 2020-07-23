@@ -51,6 +51,7 @@ set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${OBJECT_GEN_FLAGS}" CACHE INTERNAL "ASM
 
 # Add libs
 add_subdirectory(ASF ASF)
+add_subdirectory(framework)
 add_subdirectory(boot)
 add_subdirectory(app)
 
@@ -59,8 +60,8 @@ add_executable(${PROJECT_NAME}-boot $<TARGET_OBJECTS:boot>)
 add_executable(${PROJECT_NAME}-app $<TARGET_OBJECTS:app>)
 
 # Create executable
-target_link_libraries(${PROJECT_NAME}-boot ASF)
-target_link_libraries(${PROJECT_NAME}-app ASF)
+target_link_libraries(${PROJECT_NAME}-boot ASF framework)
+target_link_libraries(${PROJECT_NAME}-app ASF framework)
 
 # Setup linker script for boot loader
 set_target_properties(${PROJECT_NAME}-app ASF PROPERTIES
