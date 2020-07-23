@@ -2,6 +2,8 @@
 
 #include <string.h>
 
+#include "memory_map_api.h"
+
 void config_nvm(void)
 {
     // Load the defaults setting the NVM
@@ -16,7 +18,65 @@ void config_nvm(void)
 }
 
 
+/**
+ * Erase the application firmware
+ */
+void erase_application(void)
+{
+    // Starting address of application
+    uint32_t start_page_address = (uint32_t) &__approm_start__;
+
+    // End address of application
+    uint32_t end_page_address = (uint32_t) &__approm_size__ + start_page_address;
+
+    // Number of rows
+    uint32_t rows = ((end_page_address - start_page_address) / NVMCTRL_PAGE_SIZE) / NVMCTRL_ROW_PAGES;
+
+    // For every row
+    for(int i = 0; i < rows; i++)
+    {
+        // Find address
+        uint32_t page_address = ((NVMCTRL_PAGE_SIZE * NVMCTRL_ROW_PAGES) * i) + start_page_address;
+
+        // Erase it
+        enum status_code error_code = STATUS_BUSY;
+        while (error_code == STATUS_BUSY)
+        {
+            error_code = STATUS_ERR_BAD_ADDRESS;
+            error_code = nvm_erase_row(page_address);
+        }
+    }
+}
+
+
+/**
+ * Write a page assuming the row has already been erased
+ *
+ * @param page
+ * @param change_page_buffer
+ */
 void write_page(uint32_t page, uint8_t *change_page_buffer)
+{
+    // Calculate the page address in flash
+    uint32_t page_address = page * NVMCTRL_ROW_PAGES * NVMCTRL_PAGE_SIZE;
+
+    // Wait until we can read
+    enum status_code error_code = STATUS_BUSY;
+    while (error_code == STATUS_BUSY)
+    {
+        // Write the page
+        error_code = nvm_write_buffer(page_address, change_page_buffer, NVMCTRL_PAGE_SIZE);
+    }
+}
+
+
+/**
+ * update one page in a row while keeping the other three pages data in the row
+ *
+ * @param page
+ * @param change_page_buffer
+ */
+void update_page(uint32_t page, uint8_t *change_page_buffer)
 {
     // Calculate the page address in flash
     uint32_t page_address = page * NVMCTRL_ROW_PAGES * NVMCTRL_PAGE_SIZE;
@@ -74,7 +134,7 @@ void write_page(uint32_t page, uint8_t *change_page_buffer)
 }
 
 
-void debug_read_app_flash(uint8_t eitherSide, uint8_t *page_buffer)
+void demo_read_app_flash(uint8_t eitherSide, uint8_t *page_buffer)
 {
     // Show application firmware pages 2 either side of the start
     uint32_t app_page_location = (0x4000 / NVMCTRL_PAGE_SIZE) / NVMCTRL_ROW_PAGES;
@@ -150,21 +210,21 @@ void write_firmware_demo(void)
     // Show the start of the application firmware
     printf("Getting the first page for application firmware\r\n");
     uint8_t page_buffer[NVMCTRL_PAGE_SIZE] = {0};
-    debug_read_app_flash(0, page_buffer);
+    demo_read_app_flash(0, page_buffer);
 
     // Write a packet to the application firmware
     page_buffer[0] = 0x10;
-    write_page(64, (uint8_t*) &page_buffer);
+    update_page(64, (uint8_t*) &page_buffer);
 
     // Show the updated packet
     printf("\r\nModified the first byte of the first page for application firmware to 0x10\r\n");
-    debug_read_app_flash(0, page_buffer);
+    demo_read_app_flash(0, page_buffer);
 
     // Fix the packet back to original so it'll boot
     page_buffer[0] = 0x38;
-    write_page(64, (uint8_t*) &page_buffer);
+    update_page(64, (uint8_t*) &page_buffer);
 
     // Show the fixed packet
     printf("\r\nReturned the first byte of the first page for application firmware to normal\r\n");
-    debug_read_app_flash(0, page_buffer);
+    demo_read_app_flash(0, page_buffer);
 }
