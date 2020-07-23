@@ -17,11 +17,17 @@ MEMORY
   lpram    (rwx) : ORIGIN = 0x30000000, LENGTH = 0x00002000
 }
 
+
 /* Define address for the firmware to use */
 __bootrom_start__ = ORIGIN(bootrom);
 __bootrom_size__ = LENGTH(bootrom);
+
 __approm_start__ = ORIGIN(approm);
 __approm_size__ = LENGTH(approm);
+
+__sharedram_start__ = ORIGIN(sharedram);
+__sharedram_size__ = LENGTH(sharedram);
+
 
 /* Define the shared memory section */
 SECTIONS
