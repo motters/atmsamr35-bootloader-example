@@ -1,4 +1,6 @@
 ---
+Language: Cpp
+
 # What checks should we enable and disable
 Checks: >
     -*,

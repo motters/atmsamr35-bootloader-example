@@ -1,5 +1,7 @@
 #include "flash.h"
 
+#include <string.h>
+
 void config_nvm(void)
 {
     // Load the defaults setting the NVM
@@ -97,7 +99,7 @@ void debug_read_app_flash(uint8_t eitherSide, uint8_t *page_buffer)
                 page_buffer[i] = page_buffer_read[i];
 
         // Print read bytes
-        printf("Page %d at %d: \r\n", page, page_address);
+        printf("Page %d at %lu: \r\n", page, page_address);
         for(int i = 0; i < NVMCTRL_PAGE_SIZE; i++)
         {
             printf(" %04x ", page_buffer_read[i]);
@@ -152,7 +154,7 @@ void write_firmware_demo(void)
 
     // Write a packet to the application firmware
     page_buffer[0] = 0x10;
-    write_page(64, &page_buffer);
+    write_page(64, (uint8_t*) &page_buffer);
 
     // Show the updated packet
     printf("\r\nModified the first byte of the first page for application firmware to 0x10\r\n");
@@ -160,7 +162,7 @@ void write_firmware_demo(void)
 
     // Fix the packet back to original so it'll boot
     page_buffer[0] = 0x38;
-    write_page(64, &page_buffer);
+    write_page(64, (uint8_t*) &page_buffer);
 
     // Show the fixed packet
     printf("\r\nReturned the first byte of the first page for application firmware to normal\r\n");

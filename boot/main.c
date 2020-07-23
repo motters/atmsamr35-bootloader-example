@@ -10,6 +10,8 @@
 extern uint32_t _sfixed;
 extern uint32_t _efixed;
 
+// Endless loop for poor error handling ;)
+#define ENDLESS_LOOP while(true);
 
 /**
  * Bootloader
@@ -20,7 +22,7 @@ int main()
     sio2host_init();
 
     // Get app address
-    uint32_t app_check_address = &__approm_start__;
+    uint32_t app_check_address = (uint32_t) &__approm_start__;
     uint32_t* app_check_address_ptr = (uint32_t*) app_check_address;
 
     // Print bootloader variables
@@ -43,41 +45,40 @@ int main()
     {
 
         // Check if there is an application present at the app address
-        if(app_check_address_ptr == 0xFFFFFFFF)
+        if((uint32_t) app_check_address_ptr == 0xFFFFFFFF)
         {
             printf("!!!!!! No application found !!!!!!\r\n");
-            while(true)
-            {
-            };
+            // Start an endless loop for now
+            ENDLESS_LOOP
         }
         else
         {
-            printf("Found application at: %lu; Main stack point at: %lu\r\n", app_check_address_ptr, __get_MSP());
+            printf("Found application at: %lu; Main stack point at: %lu\r\n", (uint32_t) app_check_address_ptr, __get_MSP());
         }
 
         // Check that the vector table is aligned
         if((app_check_address & ~SCB_VTOR_TBLOFF_Msk) != 0x00)
         {
-            printf("!!!!!! Test vector table address failed !!!!!! %d %d %d\r\n", app_check_address,
+            printf("!!!!!! Test vector table address failed !!!!!! %lu %lu %lu\r\n", app_check_address,
                    ~SCB_VTOR_TBLOFF_Msk, (app_check_address & ~SCB_VTOR_TBLOFF_Msk));
-            while(true)
-            {
-            };
+
+            // Start an endless loop for now
+            ENDLESS_LOOP
         }
         else
         {
-            printf("Test vector table address passed: %d %d %d\r\n", app_check_address, SCB_VTOR_TBLOFF_Msk,
+            printf("Test vector table address passed: %lu %lu %lu\r\n", app_check_address, SCB_VTOR_TBLOFF_Msk,
                    (app_check_address & ~SCB_VTOR_TBLOFF_Msk));
         }
 
         // Rebase the vector table base address
         SCB->VTOR = ((uint32_t) app_check_address_ptr & SCB_VTOR_TBLOFF_Msk);
-        printf("VTOR set to application at: %d\r\n", ((uint32_t) app_check_address_ptr & SCB_VTOR_TBLOFF_Msk));
+        printf("VTOR set to application at: %lu\r\n", ((uint32_t) app_check_address_ptr & SCB_VTOR_TBLOFF_Msk));
 
         // Rebase the stack pointer
-        __set_MSP(&app_check_address);
-        __set_PSP(&app_check_address);
-        printf("Main stack point set to: %d; Process stack pointer set to: %d\r\n", __get_MSP(), __get_PSP());
+        __set_MSP((uint32_t) &app_check_address);
+        __set_PSP((uint32_t) &app_check_address);
+        printf("Main stack point set to: %lu; Process stack pointer set to: %lu\r\n", __get_MSP(), __get_PSP());
 
         // De-init serial
         printf("Serial will now be de-init & application loaded\r\n--------------------------------------------------\r\n\r\n");
@@ -99,7 +100,5 @@ int main()
     shared_memory_set_dfu_requested(false);
 
     // We'll never get here
-    while(true)
-    {
-    };
+    ENDLESS_LOOP
 }
