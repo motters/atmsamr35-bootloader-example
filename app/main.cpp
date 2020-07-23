@@ -1,4 +1,5 @@
 #include <GlobalStartup.h>
+
 #include <shared_memory.h>
 
 /**

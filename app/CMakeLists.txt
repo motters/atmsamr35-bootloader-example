@@ -4,8 +4,8 @@ PROJECT(app LANGUAGES CXX)
 cmake_minimum_required(VERSION 3.12)
 
 # setup library files
-file(GLOB_RECURSE folder_header *.h)
-file(GLOB_RECURSE folder_source *.c)
+file(GLOB_RECURSE folder_header *.h *.hpp)
+file(GLOB_RECURSE folder_source *.c *.cpp)
 
 add_library(${PROJECT_NAME} OBJECT $<TARGET_OBJECTS:ASF> $<TARGET_OBJECTS:framework> ${folder_header} ${folder_source})
 
