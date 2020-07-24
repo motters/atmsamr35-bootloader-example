@@ -9,5 +9,5 @@
 
 #include "utils.h"
 
-void app_verify();
+bool app_verify();
 void app_start();

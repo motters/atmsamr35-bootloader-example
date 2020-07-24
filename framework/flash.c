@@ -213,6 +213,7 @@ void write_firmware_demo(void)
     demo_read_app_flash(0, page_buffer);
 
     // Write a packet to the application firmware
+    uint8_t orginal = page_buffer[0];
     page_buffer[0] = 0x10;
     update_page(64, (uint8_t*) &page_buffer);
 
@@ -221,7 +222,7 @@ void write_firmware_demo(void)
     demo_read_app_flash(0, page_buffer);
 
     // Fix the packet back to original so it'll boot
-    page_buffer[0] = 0x38;
+    page_buffer[0] = orginal;
     update_page(64, (uint8_t*) &page_buffer);
 
     // Show the fixed packet

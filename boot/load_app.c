@@ -1,5 +1,7 @@
 #include "load_app.h"
 
+#include <image.h>
+
 static uint32_t* app_check_address_ptr = NULL;
 
 bool app_verify()
@@ -10,8 +12,11 @@ bool app_verify()
 
 void app_start()
 {
+    // Get image info
+    const image_hdr_t *hdr = image_get_header(IMAGE_SLOT_1);
+
     // Get app address
-    uint32_t app_check_address = (uint32_t) &__approm_start__;
+    uint32_t app_check_address = hdr->vector_addr;
     app_check_address_ptr = (uint32_t*) app_check_address;
 
     // Check if there is an application present at the app address
@@ -27,7 +32,7 @@ void app_start()
     }
 
     // Check that the vector table is aligned
-    if((app_check_address & ~SCB_VTOR_TBLOFF_Msk) != 0x00)
+    if(((app_check_address - sizeof(image_hdr_t)) & ~SCB_VTOR_TBLOFF_Msk) != 0x00)
     {
         printf("!!!!!! Test vector table address failed !!!!!! %lu %lu %lu\r\n", app_check_address,
                ~SCB_VTOR_TBLOFF_Msk, (app_check_address & ~SCB_VTOR_TBLOFF_Msk));
@@ -49,7 +54,6 @@ void app_start()
     __set_MSP((uint32_t) &app_check_address);
     __set_PSP((uint32_t) &app_check_address);
     printf("Main stack point set to: %lu; Process stack pointer set to: %lu\r\n", __get_MSP(), __get_PSP());
-
 
     // Inc boot count
     shared_memory_increment_boot_counter();

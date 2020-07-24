@@ -12,6 +12,12 @@ atlassian-ide-plugin.xml
 
 
 
+# Python
+venv
+.venv
+
+
+
 #
 # Developer setups
 #

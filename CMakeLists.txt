@@ -107,8 +107,9 @@ add_custom_command(TARGET ${PROJECT_NAME}-app
         POST_BUILD
         DEPENDS ${PROJECT_NAME}-app
         COMMAND ${CMAKE_OBJCOPY} -Obinary ${PROJECT_NAME}-app ${PROJECT_NAME}-app.bin
+        COMMAND python ../../cmake/patch_image_header.py SAMR35-app.bin
         WORKING_DIRECTORY build
-        COMMENT "Generating bin file from application elf")
+        COMMENT "Generating bin file from application elf & patched header with CRC and bin size")
 add_custom_command(TARGET ${PROJECT_NAME}-boot
         POST_BUILD
         DEPENDS ${PROJECT_NAME}-boot

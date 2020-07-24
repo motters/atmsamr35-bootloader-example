@@ -31,6 +31,12 @@ STACK_SIZE = DEFINED(STACK_SIZE) ? STACK_SIZE : DEFINED(__stack_size__) ? __stac
  */
 SECTIONS
 {
+    .image_hdr : {
+        KEEP (*(.image_hdr))
+    } > approm
+
+    /* Vector table must be 128-bit aligned */
+    . = ALIGN(128);
 
     /**
      * ROM Definition: part 1
@@ -94,7 +100,7 @@ SECTIONS
     .ARM.exidx :
     {
       *(.ARM.exidx* .gnu.linkonce.armexidx.*)
-    } > bootrom
+    } > approm
     PROVIDE_HIDDEN (__exidx_end = .);
 
     . = ALIGN(4);
