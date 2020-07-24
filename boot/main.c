@@ -44,7 +44,11 @@ int main()
         const image_hdr_t *hdr = image_get_header(IMAGE_SLOT_1);
 
         // Validate app in flash
-        printf("App firmware verifcation: %d", app_verify(IMAGE_SLOT_1, hdr));
+        if(!app_verify(IMAGE_SLOT_1, hdr))
+        {
+            printf("Application firmware failed verification");
+            ENDLESS_LOOP
+        }
 
         // Switch to application
         app_start(hdr);
