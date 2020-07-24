@@ -1,8 +1,9 @@
 #include <stdio.h>
 
-#include <flash.h>
-
 #include <GlobalStartup.h>
+
+#include <flash.h>
+#include <image.h>
 #include <shared_memory.h>
 
 #include "load_app.h"
@@ -40,11 +41,13 @@ int main()
     if (!shared_memory_is_dfu_requested())
     {
         // Get header information
+        const image_hdr_t *hdr = image_get_header(IMAGE_SLOT_1);
 
         // Validate app in flash
+        printf("App firmware verifcation: %d", app_verify(IMAGE_SLOT_1, hdr));
 
         // Switch to application
-        app_start();
+        app_start(hdr);
     }
 
     // Update flash

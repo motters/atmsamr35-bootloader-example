@@ -39,7 +39,7 @@ def patch_binary_payload(bin_filename):
     )
     with open(bin_filename, "r+b") as f:
         # Seek to beginning of "uint32_t crc"
-        f.seek(4)
+        f.seek(2)
         # Write correct values into crc & data_size
         f.write(image_hdr_crc_data_size)
 
