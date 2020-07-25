@@ -133,6 +133,21 @@ void update_page(uint32_t page, uint8_t *change_page_buffer)
 
 }
 
+void read_page(uint32_t page, uint8_t *page_output)
+{
+    // Find address
+    uint32_t app_page_location = (0x4000 / NVMCTRL_PAGE_SIZE) / NVMCTRL_ROW_PAGES;
+    uint32_t address = page * NVMCTRL_ROW_PAGES * NVMCTRL_PAGE_SIZE;
+
+    // Wait until we can read
+    enum status_code error_code = STATUS_BUSY;
+    while (error_code == STATUS_BUSY)
+    {
+        // Read the page
+        error_code = nvm_read_buffer(address, page_output, NVMCTRL_PAGE_SIZE);
+    }
+}
+
 
 void demo_read_app_flash(uint8_t eitherSide, uint8_t *page_buffer)
 {

@@ -1,0 +1,6 @@
+[submodule "vendor/mbedtls"]
+	path = vendor/mbedtls
+	url = https://github.com/ARMmbed/mbedtls.git
+[submodule "vendor/micro-ecc"]
+	path = vendor/micro-ecc
+	url = https://github.com/kmackay/micro-ecc.git

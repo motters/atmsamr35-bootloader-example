@@ -34,7 +34,7 @@
  * Support and FAQ: visit <a href="https://www.microchip.com/support/">Microchip Support</a>
  */
 #include "extint.h"
-#include "extint_callback.h"
+#include "extint_callback.h_old"
 
 /**
  * \internal

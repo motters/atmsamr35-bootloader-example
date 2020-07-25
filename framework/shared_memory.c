@@ -71,7 +71,7 @@ void shared_memory_init(void)
     if (shared_memory.initialised_flag != INITIALISED_FLAG)
     {
         // Tell the world what we're doing
-        printf("Shared memory uinitialized; Initialing and setting flag\r\n");
+        // printf("Shared memory uinitialized; Initialing and setting flag\r\n");
 
         // Re-initialise the struct
         memset(&shared_memory, 0, sizeof(shared_memory_t));

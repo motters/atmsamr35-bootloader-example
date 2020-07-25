@@ -1,17 +1,17 @@
 #include <stdio.h>
-
-#include <GlobalStartup.h>
+#include <string.h>
+#include <asf.h>
 
 #include <flash.h>
 #include <image.h>
 #include <shared_memory.h>
 
 #include "load_app.h"
+#include "verify.h"
 
 // Proved via bootloader linker script
 extern uint32_t _sfixed;
 extern uint32_t _efixed;
-
 
 /**
  * Bootloader
@@ -44,11 +44,21 @@ int main()
         const image_hdr_t *hdr = image_get_header(IMAGE_SLOT_1);
 
         // Validate app in flash
-        if(!app_verify(IMAGE_SLOT_1, hdr))
+        if(!crc_verification(IMAGE_SLOT_1, hdr))
         {
-            printf("Application firmware failed verification");
+            printf("Application firmware failed CRC verification\r\n");
             ENDLESS_LOOP
         }
+
+        // Authenticate firmware image using ECDSA-SHA256
+        if(!security_verification(IMAGE_SLOT_1, hdr))
+        {
+            printf("Application firmware failed security checks\r\n");
+            ENDLESS_LOOP
+        }
+
+        // Message we passed all checks
+        printf("App passed CRC & security signature tests. Attempting to booting app...\r\n\r\n");
 
         // Switch to application
         app_start(hdr);

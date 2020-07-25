@@ -43,7 +43,7 @@ set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 #---------------------------------------------------------------------------------------
 # Set compiler/linker flags
 #---------------------------------------------------------------------------------------
-set(OBJECT_GEN_FLAGS "-O0 -mthumb -fno-builtin -Wall -ffunction-sections -fdata-sections -fomit-frame-pointer -mabi=aapcs -fno-exceptions")
+set(OBJECT_GEN_FLAGS "-O0 -mthumb -fno-builtin -Wall -ffunction-sections -fdata-sections -fomit-frame-pointer -mabi=aapcs -fno-exceptions -Wunused-parameter -Wno-unused-parameter")
 
 set(CMAKE_C_FLAGS "${OBJECT_GEN_FLAGS} -std=gnu99 " CACHE INTERNAL "C Compiler options")
 set(CMAKE_CXX_FLAGS "${OBJECT_GEN_FLAGS} " CACHE INTERNAL "C++ Compiler options") # -std=c++17 defined in main CMakeList.txt
@@ -55,12 +55,12 @@ set(CMAKE_EXE_LINKER_FLAGS "-mthumb -Wl,-Map=${PROJECT_NAME}.map --specs=nano.sp
 #---------------------------------------------------------------------------------------
 # Set debug/release build configuration Options
 #---------------------------------------------------------------------------------------
-set(CMAKE_C_FLAGS_DEBUG "-Os -g3" CACHE INTERNAL "C Compiler options for debug build type")
+set(CMAKE_C_FLAGS_DEBUG "-Os -g3 -flto" CACHE INTERNAL "C Compiler options for debug build type")
 set(CMAKE_CXX_FLAGS_DEBUG "-Os -g3 -flto" CACHE INTERNAL "C++ Compiler options for debug build type")
 set(CMAKE_ASM_FLAGS_DEBUG "-g3" CACHE INTERNAL "ASM Compiler options for debug build type")
 set(CMAKE_EXE_LINKER_FLAGS_DEBUG "-flto" CACHE INTERNAL "Linker options for debug build type")
 
-set(CMAKE_C_FLAGS_RELEASE "-Os" CACHE INTERNAL "C Compiler options for release build type")
+set(CMAKE_C_FLAGS_RELEASE "-Os -g3" -flto CACHE INTERNAL "C Compiler options for release build type")
 set(CMAKE_CXX_FLAGS_RELEASE "-Os -flto" CACHE INTERNAL "C++ Compiler options for release build type")
 set(CMAKE_ASM_FLAGS_RELEASE "" CACHE INTERNAL "ASM Compiler options for release build type")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "-flto" CACHE INTERNAL "Linker options for release build type")

@@ -13,12 +13,13 @@ typedef enum {
     IMAGE_SLOT_1 = 1,
 } image_slot_t;
 
-// Allow 32 bytes
+// Allow 32 bytes + 64 + 32 = 128 bytes aka 2 pages
 // WARNING: if you change this struct you must modify the image_header.py script
 typedef struct __attribute__((packed)) {
     uint16_t image_magic;
     uint32_t crc;
     uint32_t data_size;
+    uint8_t signature[64];
     uint8_t version_major;
     uint8_t version_minor;
     uint8_t version_patch;
@@ -27,6 +28,7 @@ typedef struct __attribute__((packed)) {
     uint32_t reserved_1;
     uint16_t reserved_2;
     char git_sha[8];
+    uint8_t reserved_3[32];
 } image_hdr_t;
 
 

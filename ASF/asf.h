@@ -66,11 +66,11 @@
 #include <delay.h>
 
 // From module: EEPROM Emulator Service
-#include <eeprom.h>
+//#include <eeprom.h>
 
 // From module: EXTINT - External Interrupt (Callback APIs)
 #include <extint.h>
-#include <extint_callback.h>
+//#include <extint_callback.h>
 
 // From module: Generic board support
 #include <board.h>
@@ -141,6 +141,6 @@
 
 // From module: WDT - Watchdog Timer (Callback APIs)
 #include <wdt.h>
-#include <wdt_callback.h>
+//#include <wdt_callback.h1>
 
 #endif // ASF_H

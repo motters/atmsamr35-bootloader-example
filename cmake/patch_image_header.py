@@ -12,7 +12,7 @@ def patch_binary_payload(bin_filename):
     Patch crc & data_size fields of image_hdr_t in place in binary
     Raise exception if binary is not a supported type
     """
-    IMAGE_HDR_SIZE_BYTES = 32
+    IMAGE_HDR_SIZE_BYTES = 128
     IMAGE_HDR_MAGIC = 0xed9e
 
     with open(bin_filename, "rb") as f:
@@ -30,13 +30,18 @@ def patch_binary_payload(bin_filename):
 
     data_size = len(data)
     crc32 = binascii.crc32(data) & 0xffffffff
+    signature = [147, 118, 133, 98, 254, 90, 180, 160, 50, 37, 7, 47, 23, 108, 252, 183, 96, 145, 12, 35, 199, 171, 143,
+                 229, 139, 126, 242, 197, 115, 25, 68, 57, 211, 101, 66, 94, 122, 29, 125, 84, 7, 173, 247, 19, 34, 48,
+                 32, 41, 50, 247, 218, 132, 3, 19, 31, 171, 80, 137, 109, 109, 68, 81, 163, 77]
 
-    image_hdr_crc_data_size = struct.pack("<LL", crc32, data_size)
+
+    image_hdr_crc_data_size = struct.pack("<LL{}B".format(len(signature)), crc32, data_size, *signature)
     print(
-        "Adding crc:0x{:08x} data_size:{} to '{}'".format(
+        "Adding crc:{} data_size:{} to '{}'".format(
             crc32, data_size, bin_filename
         )
     )
+
     with open(bin_filename, "r+b") as f:
         # Seek to beginning of "uint32_t crc"
         f.seek(2)

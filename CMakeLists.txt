@@ -49,11 +49,24 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OBJECT_GEN_FLAGS}" CACHE INTERNAL "C Compi
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OBJECT_GEN_FLAGS}" CACHE INTERNAL "C++ Compiler options")
 set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${OBJECT_GEN_FLAGS}" CACHE INTERNAL "ASM Compiler options")
 
+set(ENABLE_TESTING OFF CACHE INTERNAL "")
+set(ENABLE_PROGRAMS OFF CACHE INTERNAL "")
+set(ENABLE_ZLIB_SUPPORT OFF CACHE INTERNAL "")
+set(LINK_WITH_PTHREAD OFF CACHE INTERNAL "")
+set(UNSAFE_BUILD OFF CACHE INTERNAL "")
+set(USE_PKCS11_HELPER_LIBRARY OFF CACHE INTERNAL "")
+set(USE_SHARED_MBEDTLS_LIBRARY OFF CACHE INTERNAL "")
+set(INSTALL_MBEDTLS_HEADERS OFF CACHE INTERNAL "")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMBEDTLS_CONFIG_FILE=\\\"${CMAKE_SOURCE_DIR}/mbedtls_config.h\\\"")
+include_directories(mbedtls/include)
+
+
 # Add libs
 add_subdirectory(ASF ASF)
 add_subdirectory(framework)
 add_subdirectory(boot)
 add_subdirectory(app)
+#add_subdirectory(vendor/mbedtls)
 
 # Create executable
 add_executable(${PROJECT_NAME}-boot $<TARGET_OBJECTS:boot>)
@@ -64,7 +77,7 @@ target_link_libraries(${PROJECT_NAME}-boot ASF framework)
 target_link_libraries(${PROJECT_NAME}-app ASF framework)
 
 # Setup linker script for boot loader
-set_target_properties(${PROJECT_NAME}-app ASF PROPERTIES
+set_target_properties(${PROJECT_NAME}-app PROPERTIES
         LINKER_SCRIPT application.ld
         LINK_FLAGS "${LINK_FLAGS} -Wl,--start-group -larm_cortexM0l_math -lm -Wl,-Map=${PROJECT_NAME}-app.map -Wl,--end-group -L${CMAKE_SOURCE_DIR}/ASF/thirdparty/CMSIS/Lib/GCC -L${CMAKE_SOURCE_DIR}/linker -Wl,--gc-sections -mcpu=cortex-m0plus -Tapplication.ld"
 )
