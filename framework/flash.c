@@ -174,6 +174,7 @@ void demo_read_app_flash(uint8_t eitherSide, uint8_t *page_buffer)
                 page_buffer[i] = page_buffer_read[i];
 
         // Print read bytes
+#if 0
         printf("Page %d at %lu: \r\n", page, page_address);
         for(int i = 0; i < NVMCTRL_PAGE_SIZE; i++)
         {
@@ -182,6 +183,7 @@ void demo_read_app_flash(uint8_t eitherSide, uint8_t *page_buffer)
                 printf("\r\n");
         }
         printf("\r\n");
+#endif
     }
 }
 
@@ -219,11 +221,11 @@ void write_firmware_demo(void)
     // Setup flash drivers
     config_nvm();
 
-    printf("\r\nDemo'ing modified application firmware\r\n");
-    printf("-------------------------------------------\r\n");
+    //printf("\r\nDemo'ing modified application firmware\r\n");
+    //printf("-------------------------------------------\r\n");
 
     // Show the start of the application firmware
-    printf("Getting the first page for application firmware\r\n");
+    //printf("Getting the first page for application firmware\r\n");
     uint8_t page_buffer[NVMCTRL_PAGE_SIZE] = {0};
     demo_read_app_flash(0, page_buffer);
 
@@ -233,7 +235,7 @@ void write_firmware_demo(void)
     update_page(64, (uint8_t*) &page_buffer);
 
     // Show the updated packet
-    printf("\r\nModified the first byte of the first page for application firmware to 0x10\r\n");
+    //printf("\r\nModified the first byte of the first page for application firmware to 0x10\r\n");
     demo_read_app_flash(0, page_buffer);
 
     // Fix the packet back to original so it'll boot
@@ -241,6 +243,6 @@ void write_firmware_demo(void)
     update_page(64, (uint8_t*) &page_buffer);
 
     // Show the fixed packet
-    printf("\r\nReturned the first byte of the first page for application firmware to normal\r\n");
+    //printf("\r\nReturned the first byte of the first page for application firmware to normal\r\n");
     demo_read_app_flash(0, page_buffer);
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <uECC.h>
+#include <keys.h>
 
 #include <sha256.h>
 #include <flash.h>

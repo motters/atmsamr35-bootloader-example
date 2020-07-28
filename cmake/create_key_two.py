@@ -2,16 +2,13 @@ import argparse
 import binascii
 import struct
 import hashlib
-import subprocess
-import OpenSSL
-from OpenSSL import crypto
-import base64
 import ecdsa
-import os
-import struct
-from codecs import decode, encode
-import re
-import codecs
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.exceptions import InvalidSignature
+from cryptography.hazmat.primitives.serialization import load_pem_private_key
+from cryptography.hazmat.primitives.asymmetric.utils import decode_dss_signature
 
 """
 This script update the image section of the firmware file
@@ -53,40 +50,34 @@ def patch_binary_payload(bin_filename, key_locations):
     crc32 = binascii.crc32(data) & 0xffffffff
 
     # Create hash of firmware
-    #data2 = "data"
-    #data2_sha = hashlib.sha256(data2.encode('utf-8')).hexdigest()
-    #print(data2_sha)
-    #open("data.sha256", "w").write(data2_sha)
+    firmware_hash = hashlib.sha256(data)
 
-    # Sign  secp256r1 = prime256v1
-    key_data = subprocess.run(["openssl", "dgst", "-sha256", "-sign", "../../keys/DEBUG/ec-priv.pem", "SAMR35-app.bin"], capture_output=True)
-    print(key_data.stdout)
-    open("SAMR35-app.sha256", "wb").write(key_data.stdout)
-    open("SAMR35-app.sha256.hex", "w").write(codecs.getencoder('hex_codec')(key_data.stdout)[0].decode('utf-8'))
+    # Get private key
+    curve = ec.SECP256R1()
+    signature_algorithm = ec.ECDSA(hashes.SHA256())
+    serialized_private_string = open(key_locations + "/ec-priv.pem", "r").read()
+    with open(key_locations + "/ec-priv.pem", 'rb') as pem_in:
+        serialized_private_string = pem_in.read()
 
-    # Verify
-    verify_data = subprocess.run(["openssl", "dgst", "-sha256", "-verify", "../../keys/DEBUG/public.pem", "-signature", "SAMR35-app.sha256", "SAMR35-app.bin"], capture_output=True)
-    print(verify_data.stdout)
-    open("SAMR35-app.verify", "wb").write(verify_data.stdout)
+    priv_key = load_pem_private_key(serialized_private_string, None, default_backend())
 
-    # Format sig for firmware; decode from DER format
-    key_data_parse = subprocess.run(["openssl", "asn1parse", "-inform", "DER", "-in", "SAMR35-app.sha256"], capture_output=True)
-    open("SAMR35-app.sha256.asn", "wb").write(key_data_parse.stdout)
-    # Parse the decoded data
-    ans_decoded_ascii = open("SAMR35-app.sha256.asn", "r").read()
-    regex = r"INTEGER           :(\w*)"
-    ints = re.findall(regex, ans_decoded_ascii, re.MULTILINE)
-    hex_string = ints[0] + ints[1]
-    n = 2
-    # Put decode data into list
-    signature = [int(hex_string[i:i+n], 16) for i in range(0, len(hex_string), n)]
+    signature_dss = priv_key.sign(data, signature_algorithm)
+    result, signature = decode_dss_signature(signature_dss)
+
+    #hex_data = signature
+    signature_str = str(signature)
     print(signature)
-    print(len(signature))
+    print(result)
+    #AES_KEY = str(bytearray.fromhex(signature_str))
+    #hex_data = bytes.fromhex(signature_str)
+
+    #print(AES_KEY)
+    #print('Signature: %s' % hex_data)
 
     # Sign the bin file
-    #signature = [147, 118, 133, 98, 254, 90, 180, 160, 50, 37, 7, 47, 23, 108, 252, 183, 96, 145,
-    #    12, 35, 199, 171, 143, 229, 139, 126, 242, 197, 115, 25, 68, 57, 211, 101, 66, 94, 122, 29, 125, 84, 7, 173,
-    #    247, 19, 34, 48, 32, 41, 50, 247, 218, 132, 3, 19, 31, 171, 80, 137, 109, 109, 68, 81, 163, 77]
+    signature = [147, 118, 133, 98, 254, 90, 180, 160, 50, 37, 7, 47, 23, 108, 252, 183, 96, 145,
+                 12, 35, 199, 171, 143, 229, 139, 126, 242, 197, 115, 25, 68, 57, 211, 101, 66, 94, 122, 29, 125, 84, 7, 173,
+                 247, 19, 34, 48, 32, 41, 50, 247, 218, 132, 3, 19, 31, 171, 80, 137, 109, 109, 68, 81, 163, 77]
 
     # Assemble the generated information
     image_hdr_crc_data_size = struct.pack("<LL{}B".format(len(signature)), crc32, data_size, *signature)

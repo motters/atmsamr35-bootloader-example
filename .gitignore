@@ -12,6 +12,11 @@ atlassian-ide-plugin.xml
 
 
 
+# Public private keys
+*.pem
+
+
+
 # Python
 venv
 .venv

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <stdio.h>
 #include <stdint.h>
 
 #include <memory_map_api.h>

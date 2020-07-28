@@ -22,7 +22,7 @@ int main()
     sio2host_init();
 
     // Print bootloader variables
-    printf("\r\n\r\n\r\nWelcome to the bootloader V0.0.1\r\n");
+    //printf("\r\n\r\n\r\nWelcome to the bootloader V0.0.1\r\n");
 
     // Setup shared memory
     shared_memory_init();
@@ -47,18 +47,18 @@ int main()
         if(!crc_verification(IMAGE_SLOT_1, hdr))
         {
             printf("Application firmware failed CRC verification\r\n");
-            ENDLESS_LOOP
+            //ENDLESS_LOOP
         }
 
         // Authenticate firmware image using ECDSA-SHA256
         if(!security_verification(IMAGE_SLOT_1, hdr))
         {
             printf("Application firmware failed security checks\r\n");
-            ENDLESS_LOOP
+            //ENDLESS_LOOP
         }
 
         // Message we passed all checks
-        printf("App passed CRC & security signature tests. Attempting to booting app...\r\n\r\n");
+        //printf("App passed CRC & security signature tests. Attempting to booting app...\r\n\r\n");
 
         // Switch to application
         app_start(hdr);

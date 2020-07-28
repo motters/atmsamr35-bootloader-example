@@ -1,8 +1,7 @@
 #include "load_app.h"
 
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
+//#include <stdio.h>
+//#include <stdlib.h>
 
 static uint32_t* app_check_address_ptr = NULL;
 
@@ -17,7 +16,7 @@ void app_start(const image_hdr_t *hdr)
     // Check if there is an application present at the app address
     if((uint32_t) app_check_address_ptr == 0xFFFFFFFF)
     {
-        printf("!!!!!! No application found !!!!!!\r\n");
+        //printf("!!!!!! No application found !!!!!!\r\n");
         // Start an endless loop for now
         ENDLESS_LOOP
     }
@@ -29,8 +28,8 @@ void app_start(const image_hdr_t *hdr)
     // Check that the vector table is aligned
     if(((app_check_address - sizeof(image_hdr_t)) & ~SCB_VTOR_TBLOFF_Msk) != 0x00)
     {
-        printf("!!!!!! Test vector table address failed !!!!!! %lu %lu %lu\r\n", app_check_address,
-               ~SCB_VTOR_TBLOFF_Msk, (app_check_address & ~SCB_VTOR_TBLOFF_Msk));
+        //printf("!!!!!! Test vector table address failed !!!!!! %lu %lu %lu\r\n", app_check_address,
+        //       ~SCB_VTOR_TBLOFF_Msk, (app_check_address & ~SCB_VTOR_TBLOFF_Msk));
 
         // Start an endless loop for now
         ENDLESS_LOOP

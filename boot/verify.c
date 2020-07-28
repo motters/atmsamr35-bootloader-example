@@ -1,6 +1,9 @@
 #include "verify.h"
 
 #include <string.h>
+#include <keys.h>
+
+
 
 /* Simple public domain implementation of the standard CRC32 checksum.
  * Outputs the checksum for each file given as a command line argument.
@@ -69,20 +72,35 @@ bool crc_verification(image_slot_t slot,  const image_hdr_t *hdr)
     return false;
 }
 
-void generate_application_hash(unsigned char* output)
+void generate_application_hash(const image_hdr_t *hdr, unsigned char* output)
 {
     SHA256_CTX ctx;
     sha256_init(&ctx);
     BYTE page_output[64] = {};
 
     // 2048 total pages - 64 pages where the app starts - 2 pages for the app header
-    for (int idx = 0; idx < 2048-64+2; ++idx)
+    //for (int idx = 0; idx < 2048-64+2; ++idx)
+
+    // Find the size of the header
+    void *addr = NULL;
+    addr = &__approm_start__;
+    addr += sizeof(image_hdr_t);
+
+    //uint32_t offset = 0x4000 + sizeof(image_hdr_t);
+    for(size_t i = 0; i < hdr->data_size; ++i)
+    {
+        //printf("%lu ", ((uint8_t*)addr)[i]);
+        sha256_update(&ctx, ((uint8_t*)addr)[i], 1);
+    }
+    /*for (int idx = 0; idx < 2048-64+2; ++idx)
     {
         read_page(64-2+idx, page_output);
         sha256_update(&ctx, page_output, strlen(page_output));
-    }
+    }*/
 
+    //sha256_update(&ctx, "data", 4);
     sha256_final(&ctx, output);
+
 }
 
 
@@ -109,14 +127,19 @@ bool security_verification(image_slot_t slot,  const image_hdr_t *hdr)
 {
     // Create a hash of the firmware
     unsigned char output[SHA256_BLOCK_SIZE];
-    generate_application_hash(&output);
+    generate_application_hash(hdr, &output);
+
+    printf("sha: ");
+    for(int i = 0; i < SHA256_BLOCK_SIZE; i++)
+        printf(" %x ", output[i]);
+    printf("\n\n");
 
 #if GEN_KEY==0
     // Set the public key
-    uint8_t public[uECC_BYTES * 2] = {
+    /*uint8_t public[uECC_BYTES * 2] = {
         108, 171, 139, 43, 141, 113, 38, 126, 108, 27, 24, 120, 12, 53, 61, 5, 150, 162, 26, 197, 163, 203, 65, 164, 156, 108,
         21, 107, 254, 100, 224, 231, 125, 123, 168, 252, 196, 77, 131, 235, 134, 78, 118, 82, 135, 150, 213, 245, 145,
-        166, 54, 41, 163, 238, 207, 173, 3, 84, 239, 239, 164, 212, 124, 245 };
+        166, 54, 41, 163, 238, 207, 173, 3, 84, 239, 239, 164, 212, 124, 245 };*/
 
     // The expected sign
     //uint8_t sig[uECC_BYTES * 2] = ;
@@ -148,9 +171,19 @@ bool security_verification(image_slot_t slot,  const image_hdr_t *hdr)
 
     printf("\r\n");
 #endif
+    printf("image sig: ");
+    for(int i = 0; i < 64; i++)
+        printf(" %d", hdr->signature[i]);
+    printf("\n\n");
+
+    printf("key: ");
+    for(int i = 0; i < 64; i++)
+        printf(" %d ", PUBLIC_KEY[i]);
+    printf("\n\n");
 
     // Check the firmware matches the sig
-    if (!uECC_verify(public, output, hdr->signature))
+    const struct uECC_Curve_t * curve = uECC_secp256r1();
+    if (!uECC_verify(&PUBLIC_KEY[0], &output[0], 64, &hdr->signature[0], curve))
         return false;
 
     return true;
