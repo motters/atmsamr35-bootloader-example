@@ -66,17 +66,22 @@ add_subdirectory(ASF ASF)
 add_subdirectory(framework)
 add_subdirectory(boot)
 add_subdirectory(app)
-#add_subdirectory(vendor/mbedtls)
+add_subdirectory(vendor/mbedtls mbed-build)
+#set(MBEDTLS_DIR vendor/mbedtls)
 
 # Create executable
 add_executable(${PROJECT_NAME}-boot $<TARGET_OBJECTS:boot>)
 add_executable(${PROJECT_NAME}-app $<TARGET_OBJECTS:app>)
 
 # Create executable
-target_link_libraries(${PROJECT_NAME}-boot ASF framework)
+target_link_libraries(${PROJECT_NAME}-boot ASF framework) # mbedcrypto mbedx509
 target_link_libraries(${PROJECT_NAME}-app ASF framework)
 
 # Setup linker script for boot loader
+set_target_properties(mbedcrypto PROPERTIES
+        LINK_FLAGS "${LINK_FLAGS} --specs=nano.specs"
+        )
+
 set_target_properties(${PROJECT_NAME}-app PROPERTIES
         LINKER_SCRIPT application.ld
         LINK_FLAGS "${LINK_FLAGS} -Wl,--start-group -larm_cortexM0l_math -lm -Wl,-Map=${PROJECT_NAME}-app.map -Wl,--end-group -L${CMAKE_SOURCE_DIR}/ASF/thirdparty/CMSIS/Lib/GCC -L${CMAKE_SOURCE_DIR}/linker -Wl,--gc-sections -mcpu=cortex-m0plus -Tapplication.ld"
@@ -85,8 +90,10 @@ set_target_properties(${PROJECT_NAME}-app PROPERTIES
 # Setup linker script for application
 set_target_properties(${PROJECT_NAME}-boot PROPERTIES
         LINKER_SCRIPT application.ld
-        LINK_FLAGS "${LINK_FLAGS} -Wl,--start-group -larm_cortexM0l_math -lm -Wl,-Map=${PROJECT_NAME}-boot.map -Wl,--end-group -L${CMAKE_SOURCE_DIR}/ASF/thirdparty/CMSIS/Lib/GCC -L${CMAKE_SOURCE_DIR}/linker -Wl,--gc-sections -mcpu=cortex-m0plus -Tbootloader.ld"
+        LINK_FLAGS "${LINK_FLAGS}  -Wl,--start-group -larm_cortexM0l_math -lm -Wl,-Map=${PROJECT_NAME}-boot.map -Wl,--end-group -L${CMAKE_SOURCE_DIR}/ASF/thirdparty/CMSIS/Lib/GCC -L${CMAKE_SOURCE_DIR}/linker -Wl,--gc-sections -mcpu=cortex-m0plus -Tbootloader.ld"
 )
+
+
 
 # Print stats on the elf file
 print_section_sizes(${PROJECT_NAME}-boot)

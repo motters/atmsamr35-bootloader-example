@@ -1,6 +1,9 @@
 #pragma once
 
-#include <uECC.h>
+//#include <uECC.h>
+#include <mbedtls_config.h>
+//#include "mbedtls/config.h"
+#include <mbedtls/pk.h>
 #include <keys.h>
 
 #include <sha256.h>
@@ -8,6 +11,8 @@
 #include <image.h>
 
 #define GEN_KEY 0
+
+
 
 bool security_verification(image_slot_t slot,  const image_hdr_t *hdr);
 bool crc_verification(image_slot_t slot, const image_hdr_t *hdr);

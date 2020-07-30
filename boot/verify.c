@@ -182,9 +182,26 @@ bool security_verification(image_slot_t slot,  const image_hdr_t *hdr)
     printf("\n\n");
 
     // Check the firmware matches the sig
-    const struct uECC_Curve_t * curve = uECC_secp256r1();
+    /*const struct uECC_Curve_t * curve = uECC_secp256r1();
     if (!uECC_verify(&PUBLIC_KEY[0], &output[0], 64, &hdr->signature[0], curve))
         return false;
+    */
+
+    mbedtls_pk_context pk;
+    mbedtls_pk_init(&pk);
+    int ret = mbedtls_pk_parse_public_key(&pk, UPDATE_CERT_PUBKEY, 178);
+    if (ret != 0) {
+        printf("ECDSA failed to parse public keys %d (-0x%04x)\n", ret, ret); // (-0x%04x)
+        return false;
+    }
+
+    ret = mbedtls_pk_verify(&pk, MBEDTLS_MD_SHA256, output, 0, hdr->signature, hdr->signature_size);
+    if (ret != 0) {
+        printf("ECDSA failed to verify message (-0x%04x)\n", ret);
+        return false;
+    }
+
+    mbedtls_pk_free(&pk);
 
     return true;
 }

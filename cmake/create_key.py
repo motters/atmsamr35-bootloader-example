@@ -9,6 +9,7 @@ from cryptography.exceptions import InvalidSignature
 import os
 import errno
 import re
+import json
 
 import subprocess
 
@@ -31,6 +32,10 @@ def patch_binary_payload(key_type):
     public_key = subprocess.run(
         ["openssl", "ec", "-in", key_dir + "/ec-priv.pem", "-pubout", "-out", key_dir + "/public.pem"],
         capture_output=True, universal_newlines=True)  # -conv_form uncompressed
+    with open(key_dir + "/public.pem") as src:
+        public_lines = [row.strip('\n') for row in src]
+    public_line_count = len(public_lines[0]) + len(public_lines[1]) + len(public_lines[2]) + len(public_lines[3])
+
     private_key = subprocess.run(["openssl", "ec", "-in", key_dir + "/ec-priv.pem", "-out", key_dir + "/private.pem"],
                                  capture_output=True, universal_newlines=True)
     key_data = subprocess.run(["openssl", "ec", "-in", key_dir + "/ec-priv.pem", "-text", "-noout"],
@@ -44,14 +49,16 @@ def patch_binary_payload(key_type):
     # Get public key
     public_regex = r"pub:\n\s{4}([\w\w:]*)\n\s{4}([\w\w:]*)\n\s{4}([\w\w:]*)\n\s{4}([\w\w:]*)\n\s{4}([\w\w:]*)\n"
     public_matches = re.findall(public_regex, key_data.stdout, re.MULTILINE)
-    public_key = public_matches[0][0] + public_matches[0][1] + public_matches[0][2] + public_matches[0][3] + \
+    public_key_assemble = public_matches[0][0] + public_matches[0][1] + public_matches[0][2] + public_matches[0][3] + \
                  public_matches[0][4]
     print(key_data.stdout)
-    print(len(public_key[3:].replace(":", "")))
+    print(len(public_key_assemble[3:].replace(":", "")))
     # Create a C array of the pubic key
-    c_array_h = "#pragma once\n#include <stdint.h>\nextern uint8_t PUBLIC_KEY[64];\nextern uint8_t PUBLIC_KEY_LENGTH;"
-    c_array_c = "#include \"keys.h\"\n"
-    c_array_c += "uint8_t PUBLIC_KEY[64] = { 0x" + public_key[3:].replace(":", ", 0x") + " };\n"
+    c_array_h = "#pragma once\n#include <stdint.h>\n#include <stddef.h>\nconst char * UPDATE_CERT_PUBKEY;\nextern const size_t UPDATE_CERT_LENGTH;\nextern uint8_t PUBLIC_KEY[64];\nextern uint8_t PUBLIC_KEY_LENGTH;"
+    c_array_c = "#include \"keys.h\"\n#include <stddef.h>\n"
+    c_array_c += 'const char * UPDATE_CERT_PUBKEY = "'+public_lines[0]+'\\n"\n"'+public_lines[1]+'"\\n\n"'+public_lines[2]+'"\\n\n"'+public_lines[3]+'\\0";\n'
+    c_array_c += "const size_t UPDATE_CERT_LENGTH = "+str(public_line_count)+";\n"
+    c_array_c += "uint8_t PUBLIC_KEY[64] = { 0x" + public_key_assemble[3:].replace(":", ", 0x") + " };\n"
     c_array_c += "uint8_t PUBLIC_KEY_LENGTH = 64;\n"
 
     # Save the C array public keys to a file

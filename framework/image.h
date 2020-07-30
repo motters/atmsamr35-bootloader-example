@@ -19,16 +19,16 @@ typedef struct __attribute__((packed)) {
     uint16_t image_magic;
     uint32_t crc;
     uint32_t data_size;
-    uint8_t signature[64];
+    uint8_t signature[72];
+    uint32_t signature_size;
     uint8_t version_major;
     uint8_t version_minor;
     uint8_t version_patch;
     uint8_t version_rc;
     uint32_t vector_addr;
-    uint32_t reserved_1;
     uint16_t reserved_2;
     char git_sha[8];
-    uint8_t reserved_3[32];
+    uint8_t reserved_3[24];
 } image_hdr_t;
 
 

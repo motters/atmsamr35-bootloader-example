@@ -79,17 +79,19 @@ def patch_binary_payload(bin_filename, key_locations):
     hex_string = ints[0] + ints[1]
     n = 2
     # Put decode data into list
-    signature = [int(hex_string[i:i+n], 16) for i in range(0, len(hex_string), n)]
-    print(signature)
-    print(len(signature))
+    #signature = [int(hex_string[i:i+n], 16) for i in range(0, len(hex_string), n)]
+    #print(signature)
+    #print(len(signature))
 
     # Sign the bin file
     #signature = [147, 118, 133, 98, 254, 90, 180, 160, 50, 37, 7, 47, 23, 108, 252, 183, 96, 145,
     #    12, 35, 199, 171, 143, 229, 139, 126, 242, 197, 115, 25, 68, 57, 211, 101, 66, 94, 122, 29, 125, 84, 7, 173,
     #    247, 19, 34, 48, 32, 41, 50, 247, 218, 132, 3, 19, 31, 171, 80, 137, 109, 109, 68, 81, 163, 77]
+    signature = key_data.stdout.split(sep=None, maxsplit=1)[0]
+    signature_size = len(signature)
 
     # Assemble the generated information
-    image_hdr_crc_data_size = struct.pack("<LL{}B".format(len(signature)), crc32, data_size, *signature)
+    image_hdr_crc_data_size = struct.pack("<LL{}BL".format(signature_size), crc32, data_size, *signature, signature_size)
     print(
         "Adding crc:{} data_size:{} & signature to '{}'".format(
             crc32, data_size, bin_filename
