@@ -86,19 +86,16 @@ void generate_application_hash(const image_hdr_t *hdr, unsigned char* output)
     addr = &__approm_start__;
     addr += sizeof(image_hdr_t);
 
-    //uint32_t offset = 0x4000 + sizeof(image_hdr_t);
+    // Slow but reliable for now
     for(size_t i = 0; i < hdr->data_size; ++i)
     {
         //printf("%lu ", ((uint8_t*)addr)[i]);
-        sha256_update(&ctx, ((uint8_t*)addr)[i], 1);
+        uint8_t value[1] = {((uint8_t*)addr)[0]};
+        // printf("%d ", value[0]);
+        sha256_update(&ctx, value, 1);
+        addr += 1;
     }
-    /*for (int idx = 0; idx < 2048-64+2; ++idx)
-    {
-        read_page(64-2+idx, page_output);
-        sha256_update(&ctx, page_output, strlen(page_output));
-    }*/
 
-    //sha256_update(&ctx, "data", 4);
     sha256_final(&ctx, output);
 
 }
@@ -182,7 +179,8 @@ bool security_verification(image_slot_t slot,  const image_hdr_t *hdr)
     printf("\n\n");
 
     // Check the firmware matches the sig
-    const struct uECC_Curve_t * curve = uECC_secp256r1();
+    //const struct uECC_Curve_t * curve = uECC_secp256r1();
+    const struct uECC_Curve_t * curve = uECC_secp256k1();
     if (!uECC_verify(&PUBLIC_KEY[0], &output[0], 64, &hdr->signature[0], curve))
         return false;
 
