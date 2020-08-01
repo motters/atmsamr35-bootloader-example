@@ -77,6 +77,6 @@ int main()
     // Clear DFT
     shared_memory_set_dfu_requested(false);
 
-    // We'll never get here 
+    // We'll never get here
     ENDLESS_LOOP
 }

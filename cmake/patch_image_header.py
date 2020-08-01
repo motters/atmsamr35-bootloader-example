@@ -1,17 +1,7 @@
 import argparse
 import binascii
-import struct
-import hashlib
-import subprocess
-import OpenSSL
-from OpenSSL import crypto
-import base64
 import ecdsa
-import os
 import struct
-from codecs import decode, encode
-import re
-import codecs
 import hashlib
 from ecdsa import SigningKey, VerifyingKey
 from ecdsa.util import sigencode_der, sigdecode_der
@@ -40,7 +30,6 @@ def patch_binary_payload(bin_filename, key_locations):
         data = f.read()
         data_byes = bytearray(data)
 
-
     # Get the image marker if we have the correct bin file
     image_magic = struct.unpack("<H", image_hdr[0:2])
 
@@ -52,14 +41,10 @@ def patch_binary_payload(bin_filename, key_locations):
             )
         )
 
+    # Create a hash of the firmware
     m = hashlib.sha256()
-    #for number in data: # [:2]
-    #    #print(number.to_bytes(1, 'little', signed=False).hex())
-     #   m.update(number.to_bytes(1, 'little', signed=False))
     m.update(data)
-    hash = m.digest()
-    print(binascii.hexlify(hash, '-'))
-    print("")
+    hashed_firmware = m.digest()
 
     # Get the size of the firmware
     data_size = len(data)
@@ -68,18 +53,15 @@ def patch_binary_payload(bin_filename, key_locations):
     crc32 = binascii.crc32(data) & 0xffffffff
 
     # Sign  secp256r1 = prime256v1
-    with open("../../keys/DEBUG/private.txt", "rb") as f:
+    with open(key_locations+"/private.bin", "rb") as f:
+        # Get private key from file
         private_key = f.read()
-        #private_key_hex = private_key.to_bytes(1, 'little', signed=False).hex()
-        print(private_key)
+        # Load key
         sk = ecdsa.SigningKey.from_string(private_key, curve=ecdsa.SECP256k1, hashfunc=hashlib.sha256)
-        #signed = sk.sign(data, hashfunc=hashlib.sha256, sigencode=ecdsa.util.sigencode_string)
-        signed = sk.sign_digest(hash)
-        print(binascii.hexlify(signed, '-'))
-        n = 2
-        signature = [int(signed.hex()[i:i+n], 16) for i in range(0, len(signed.hex()), n)]
-        print(signature)
-        print(len(signature))
+        # Sign has generated above [@todo lib can hash it's self if we use sign. Done this way for debugging]
+        signed = sk.sign_digest(hashed_firmware)  # print(binascii.hexlify(signed, '-'))
+        # Create list for signature
+        signature = [int(signed.hex()[i:i+2], 16) for i in range(0, len(signed.hex()), 2)]
 
     # Assemble the generated information 64->len(signature)
     image_hdr_crc_data_size = struct.pack("<LL{}B".format(64), crc32, data_size, *signature)

@@ -1,14 +1,4 @@
 import argparse
-import binascii
-import struct
-import hashlib
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.exceptions import InvalidSignature
-import os
-import errno
-import re
 import ecdsa
 from ecdsa import SigningKey, SECP256k1
 
@@ -24,8 +14,10 @@ def patch_binary_payload(key_type):
     """
     Create plain text keys
     """
+    # Define location to store core
     key_dir = 'keys/' + key_type
 
+    # Create a key
     sk = ecdsa.SigningKey.generate(curve=ecdsa.SECP256k1, hashfunc=None)
     vk = sk.get_verifying_key()
 
@@ -49,7 +41,7 @@ def patch_binary_payload(key_type):
     # Save the C array public keys to a file
     open(key_dir + "/keys.c", "w").write(str(c_array_c))
     open(key_dir + "/keys.h", "w").write(str(c_array_h))
-    open(key_dir + "/private.txt", "wb").write(sk.to_string())
+    open(key_dir + "/private.bin", "wb").write(sk.to_string())
     open(key_dir + "/public.txt", "w").write(str(vk.to_string()))
 
     # Success
