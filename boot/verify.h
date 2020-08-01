@@ -7,7 +7,7 @@
 #include <flash.h>
 #include <image.h>
 
-#define GEN_KEY 0
+#define VERIFY_DEBUG_COMMENTS 0
 
 bool security_verification(image_slot_t slot,  const image_hdr_t *hdr);
 bool crc_verification(image_slot_t slot, const image_hdr_t *hdr);

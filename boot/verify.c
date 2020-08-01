@@ -72,14 +72,17 @@ bool crc_verification(image_slot_t slot,  const image_hdr_t *hdr)
     return false;
 }
 
+/**
+ * Create a sha-256 hash of the application
+ *
+ * @param hdr
+ * @param output
+ */
 void generate_application_hash(const image_hdr_t *hdr, unsigned char* output)
 {
+    // Sha256 hash setup
     SHA256_CTX ctx;
     sha256_init(&ctx);
-    BYTE page_output[64] = {};
-
-    // 2048 total pages - 64 pages where the app starts - 2 pages for the app header
-    //for (int idx = 0; idx < 2048-64+2; ++idx)
 
     // Find the size of the header
     void *addr = NULL;
@@ -89,85 +92,34 @@ void generate_application_hash(const image_hdr_t *hdr, unsigned char* output)
     // Slow but reliable for now
     for(size_t i = 0; i < hdr->data_size; ++i)
     {
-        //printf("%lu ", ((uint8_t*)addr)[i]);
         uint8_t value[1] = {((uint8_t*)addr)[0]};
-        // printf("%d ", value[0]);
         sha256_update(&ctx, value, 1);
         addr += 1;
     }
 
+    // Compute the final hash
     sha256_final(&ctx, output);
-
 }
 
-
-#if GEN_KEY==1
-static uint64_t g_rand = 88172645463325252ull;
-static int fake_rng(uint8_t *dest, unsigned size)
-{
-    while (size) {
-        g_rand ^= (g_rand << 13);
-        g_rand ^= (g_rand >> 7);
-        g_rand ^= (g_rand << 17);
-
-        unsigned amount = (size > 8 ? 8 : size);
-        memcpy(dest, &g_rand, amount);
-        dest += amount;
-        size -= amount;
-    }
-    return 1;
-}
-#endif
-
-
+/**
+ * Verify the application's ECDSA signature
+ *
+ * @param slot
+ * @param hdr
+ * @return
+ */
 bool security_verification(image_slot_t slot,  const image_hdr_t *hdr)
 {
     // Create a hash of the firmware
     unsigned char output[SHA256_BLOCK_SIZE];
     generate_application_hash(hdr, &output);
 
+#if VERIFY_DEBUG_COMMENTS == 1
     printf("sha: ");
     for(int i = 0; i < SHA256_BLOCK_SIZE; i++)
         printf(" %x ", output[i]);
     printf("\n\n");
 
-#if GEN_KEY==0
-    // Set the public key
-    /*uint8_t public[uECC_BYTES * 2] = {
-        108, 171, 139, 43, 141, 113, 38, 126, 108, 27, 24, 120, 12, 53, 61, 5, 150, 162, 26, 197, 163, 203, 65, 164, 156, 108,
-        21, 107, 254, 100, 224, 231, 125, 123, 168, 252, 196, 77, 131, 235, 134, 78, 118, 82, 135, 150, 213, 245, 145,
-        166, 54, 41, 163, 238, 207, 173, 3, 84, 239, 239, 164, 212, 124, 245 };*/
-
-    // The expected sign
-    //uint8_t sig[uECC_BYTES * 2] = ;
-#else
-    uECC_set_rng(&fake_rng);
-
-    uint8_t public[uECC_BYTES * 2];
-    uint8_t private[uECC_BYTES];
-    uint8_t hash[uECC_BYTES];
-    uint8_t sig[uECC_BYTES * 2];
-
-    if (!uECC_make_key(public, private)) {
-        printf("uECC_make_key() failed\n");
-        return false;
-    }
-    memcpy(hash, public, uECC_BYTES);
-
-    if (!uECC_sign(private, output, sig)) {
-        printf("uECC_sign() failed\n");
-        return false;
-    }
-    printf("\r\nFirmware signature:\r\n");
-    for(int i = 0; i < sizeof(sig); i++)
-        printf("%d, ", sig[i]);
-
-    printf("\r\n\r\nFirmware public key: \r\n");
-    for(int i = 0; i < sizeof(public); i++)
-        printf("%d, ", public[i]);
-
-    printf("\r\n");
-#endif
     printf("image sig: ");
     for(int i = 0; i < 64; i++)
         printf(" %d", hdr->signature[i]);
@@ -177,9 +129,9 @@ bool security_verification(image_slot_t slot,  const image_hdr_t *hdr)
     for(int i = 0; i < 64; i++)
         printf(" %d ", PUBLIC_KEY[i]);
     printf("\n\n");
+#endif
 
     // Check the firmware matches the sig
-    //const struct uECC_Curve_t * curve = uECC_secp256r1();
     const struct uECC_Curve_t * curve = uECC_secp256k1();
     if (!uECC_verify(&PUBLIC_KEY[0], &output[0], 64, &hdr->signature[0], curve))
         return false;
