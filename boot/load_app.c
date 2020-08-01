@@ -1,12 +1,14 @@
 #include "load_app.h"
 
-//#include <stdio.h>
-//#include <stdlib.h>
+#include "print_array.h"
 
 static uint32_t* app_check_address_ptr = NULL;
 
-
-
+/**
+ * Attempt to boot the application
+ *
+ * @param hdr
+ */
 void app_start(const image_hdr_t *hdr)
 {
     // Get app address
@@ -16,13 +18,9 @@ void app_start(const image_hdr_t *hdr)
     // Check if there is an application present at the app address
     if((uint32_t) app_check_address_ptr == 0xFFFFFFFF)
     {
-        //printf("!!!!!! No application found !!!!!!\r\n");
+        PRINT("No application found.\r\n");
         // Start an endless loop for now
         ENDLESS_LOOP
-    }
-    else
-    {
-        //printf("Found application at: %lu; Main stack point at: %lu\r\n", (uint32_t) app_check_address_ptr, __get_MSP());
     }
 
     // Check that the vector table is aligned
@@ -30,31 +28,22 @@ void app_start(const image_hdr_t *hdr)
     {
         //printf("!!!!!! Test vector table address failed !!!!!! %lu %lu %lu\r\n", app_check_address,
         //       ~SCB_VTOR_TBLOFF_Msk, (app_check_address & ~SCB_VTOR_TBLOFF_Msk));
-
+        PRINT("Test vector table address failed")
         // Start an endless loop for now
         ENDLESS_LOOP
-    }
-    else
-    {
-        //printf("Test vector table address passed: %lu %lu %lu\r\n", app_check_address, SCB_VTOR_TBLOFF_Msk,
-        //       (app_check_address & ~SCB_VTOR_TBLOFF_Msk));
     }
 
     // Rebase the vector table base address
     SCB->VTOR = ((uint32_t) app_check_address_ptr & SCB_VTOR_TBLOFF_Msk);
-    //printf("VTOR set to application at: %lu\r\n", ((uint32_t) app_check_address_ptr & SCB_VTOR_TBLOFF_Msk));
 
     // Rebase the stack pointer
     __set_MSP((uint32_t) &app_check_address);
     __set_PSP((uint32_t) &app_check_address);
-    //printf("Main stack point set to: %lu; Process stack pointer set to: %lu\r\n", __get_MSP(), __get_PSP());
 
     // Inc boot count
     shared_memory_increment_boot_counter();
 
     // De-init serial
-    //printf("Serial will now be de-init & application loaded\r\n"
-    //       "--------------------------------------------------\r\n\r\n");
     sio2host_deinit();
 
     // Jump to user Reset Handler of application
