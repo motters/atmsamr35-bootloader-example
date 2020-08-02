@@ -55,6 +55,7 @@ void erase_application(void)
  * @param page
  * @param change_page_buffer
  */
+#if 0
 void write_page(uint32_t page, uint8_t *change_page_buffer)
 {
     // Calculate the page address in flash
@@ -68,6 +69,7 @@ void write_page(uint32_t page, uint8_t *change_page_buffer)
         error_code = nvm_write_buffer(page_address, change_page_buffer, NVMCTRL_PAGE_SIZE);
     }
 }
+#endif
 
 
 /**
@@ -133,6 +135,7 @@ void update_page(uint32_t page, uint8_t *change_page_buffer)
 
 }
 
+#if 0
 void read_page(uint32_t page, uint8_t *page_output)
 {
     // Find address
@@ -147,7 +150,6 @@ void read_page(uint32_t page, uint8_t *page_output)
         error_code = nvm_read_buffer(address, page_output, NVMCTRL_PAGE_SIZE);
     }
 }
-
 
 void demo_read_app_flash(uint8_t eitherSide, uint8_t *page_buffer)
 {
@@ -246,3 +248,4 @@ void write_firmware_demo(void)
     //printf("\r\nReturned the first byte of the first page for application firmware to normal\r\n");
     demo_read_app_flash(0, page_buffer);
 }
+#endif

@@ -43,7 +43,7 @@ set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 #---------------------------------------------------------------------------------------
 # Set compiler/linker flags
 #---------------------------------------------------------------------------------------
-set(OBJECT_GEN_FLAGS "-O0 -mthumb -fno-builtin -Wall -ffunction-sections -fdata-sections -fomit-frame-pointer -mabi=aapcs -fno-exceptions -Wunused-parameter -Wno-unused-parameter")
+set(OBJECT_GEN_FLAGS "-mthumb -mno-thumb-interwork -fno-builtin -Wall -ffunction-sections -fdata-sections -fomit-frame-pointer -mabi=aapcs -fno-exceptions -Wunused-parameter -Wno-unused-parameter")
 
 set(CMAKE_C_FLAGS "${OBJECT_GEN_FLAGS} -std=gnu99 " CACHE INTERNAL "C Compiler options")
 set(CMAKE_CXX_FLAGS "${OBJECT_GEN_FLAGS} " CACHE INTERNAL "C++ Compiler options") # -std=c++17 defined in main CMakeList.txt

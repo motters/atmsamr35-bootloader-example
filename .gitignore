@@ -32,6 +32,7 @@ venv
 
 # Private key
 *.ppk
+keys/*/*.*
 
 # Local build folders
 cmake-build-*

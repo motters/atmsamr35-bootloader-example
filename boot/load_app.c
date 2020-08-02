@@ -1,6 +1,7 @@
 #include "load_app.h"
 
 #include "print_array.h"
+#include "rtc_api.h"
 
 static uint32_t* app_check_address_ptr = NULL;
 
@@ -9,7 +10,7 @@ static uint32_t* app_check_address_ptr = NULL;
  *
  * @param hdr
  */
-void app_start(const image_hdr_t *hdr)
+bool app_start(const image_hdr_t *hdr)
 {
     // Get app address
     uint32_t app_check_address = hdr->vector_addr;
@@ -18,19 +19,21 @@ void app_start(const image_hdr_t *hdr)
     // Check if there is an application present at the app address
     if((uint32_t) app_check_address_ptr == 0xFFFFFFFF)
     {
-        PRINT("No application found.\r\n");
+        return false;
+        //PRINT("No application found.\r\n");
         // Start an endless loop for now
-        ENDLESS_LOOP
+        //ENDLESS_LOOP
     }
 
     // Check that the vector table is aligned
     if(((app_check_address - sizeof(image_hdr_t)) & ~SCB_VTOR_TBLOFF_Msk) != 0x00)
     {
+        return false;
         //printf("!!!!!! Test vector table address failed !!!!!! %lu %lu %lu\r\n", app_check_address,
         //       ~SCB_VTOR_TBLOFF_Msk, (app_check_address & ~SCB_VTOR_TBLOFF_Msk));
-        PRINT("Test vector table address failed")
+        //PRINT("Test vector table address failed")
         // Start an endless loop for now
-        ENDLESS_LOOP
+        //ENDLESS_LOOP
     }
 
     // Rebase the vector table base address
@@ -45,6 +48,7 @@ void app_start(const image_hdr_t *hdr)
 
     // De-init serial
     sio2host_deinit();
+    rtc_api_deinit();
 
     // Jump to user Reset Handler of application
     __asm("bx %0" ::"r"(*(unsigned*) ((uint32_t) app_check_address_ptr + 4)));

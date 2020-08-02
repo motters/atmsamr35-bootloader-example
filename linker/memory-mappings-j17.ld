@@ -6,7 +6,7 @@
 MEMORY
 {
   /* Flash start address 0x00000000 with a total size of in hex of 0x00020000 (131.072kB) */
-  bootrom      (rx)  : ORIGIN = 0x00000000, LENGTH = 0x00004000
+  bootrom      (rx)  : ORIGIN = 0x00000000, LENGTH = 0x00004000 /* See section 28.6.5 for bootloader sizes */
   approm       (rx)  : ORIGIN = 0x00004000, LENGTH = 0x0001C000
 
   /* SRAM start address 0x20000000 with a total size of in hex of 0x00004000 (16.384kB)  */

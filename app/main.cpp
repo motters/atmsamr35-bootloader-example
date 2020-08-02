@@ -36,14 +36,17 @@ int main()
            image_hdr.crc);
 
     // Inc boot count in shared memory
-    printf("Bootcount: %d\r\n", shared_memory_get_boot_counter());
+    printf("Resetting bootcount of %d as app is stable\r\n", shared_memory_get_boot_counter());
+    shared_memory_clear_boot_counter();
 
     // Load into firmware flasher
     shared_memory_set_dfu_requested(true);
+    shared_memory_set_update_id(123);
     printf("Setting OTA mode: %d\r\n", shared_memory_is_dfu_requested());
 
-    // Try breaking
-    printf("Trigger using a break point on me! \r\n");
+    // Reset to enter updater
+    printf("Resetting to entering bootloader's updater\r\n");
+    system_reset();
 
     // Loop forever
     while(true);

@@ -16,6 +16,7 @@ typedef struct __attribute__((packed))
     uint32_t initialised_flag;
     uint32_t flags;
     uint8_t boot_counter;
+    uint8_t update_id;
 } shared_memory_t;
 
 
@@ -132,4 +133,16 @@ void shared_memory_clear_boot_counter(void)
 uint8_t shared_memory_get_boot_counter(void)
 {
     return shared_memory.boot_counter;
+}
+
+
+
+void shared_memory_set_update_id(uint8_t id)
+{
+    shared_memory.update_id = id;
+}
+
+uint8_t shared_memory_get_update_id()
+{
+    return shared_memory.update_id;
 }

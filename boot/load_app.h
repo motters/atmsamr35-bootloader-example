@@ -9,4 +9,4 @@
 
 #include "utils.h"
 
-void app_start(const image_hdr_t *hdr);
+bool app_start(const image_hdr_t *hdr);

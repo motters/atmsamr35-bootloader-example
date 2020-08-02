@@ -14,6 +14,9 @@ void shared_memory_increment_boot_counter(void);
 void shared_memory_clear_boot_counter(void);
 uint8_t shared_memory_get_boot_counter(void);
 
+void shared_memory_set_update_id(uint8_t id);
+uint8_t shared_memory_get_update_id();
+
 #ifdef __cplusplus
 }
 #endif

@@ -66,7 +66,6 @@ add_subdirectory(ASF ASF)
 add_subdirectory(framework)
 add_subdirectory(boot)
 add_subdirectory(app)
-#add_subdirectory(vendor/mbedtls)
 
 # Create executable
 add_executable(${PROJECT_NAME}-boot $<TARGET_OBJECTS:boot>)
@@ -84,7 +83,7 @@ set_target_properties(${PROJECT_NAME}-app PROPERTIES
 
 # Setup linker script for application
 set_target_properties(${PROJECT_NAME}-boot PROPERTIES
-        LINKER_SCRIPT application.ld
+        LINKER_SCRIPT bootloader.ld
         LINK_FLAGS "${LINK_FLAGS} -Wl,--start-group -larm_cortexM0l_math -lm -Wl,-Map=${PROJECT_NAME}-boot.map -Wl,--end-group -L${CMAKE_SOURCE_DIR}/ASF/thirdparty/CMSIS/Lib/GCC -L${CMAKE_SOURCE_DIR}/linker -Wl,--gc-sections -mcpu=cortex-m0plus -Tbootloader.ld"
 )
 

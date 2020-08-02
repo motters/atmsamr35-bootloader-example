@@ -9,10 +9,15 @@
 #include "load_app.h"
 #include "verify.h"
 #include "print_array.h"
+#include "update.h"
+#include "rtc_api.h"
 
 // Proved via bootloader linker script
 extern uint32_t _sfixed;
 extern uint32_t _efixed;
+
+#define DISABLE_APP 0
+#define MAX_BOOT_ATTEMPTS 3
 
 /**
  * Bootloader
@@ -20,63 +25,61 @@ extern uint32_t _efixed;
 int main()
 {
     // Enable serial
+    //sio2host_init();
+    //rtc_api_init();
+
+    system_init();
     sio2host_init();
+    delay_init();
+    rtc_api_init();
 
     // Print bootloader variables
-    PRINT("\r\n\r\n\r\nWelcome to the bootloader V0.0.1\r\n");
+    PRINT("\r\n\r\n\r\nBootloader V0.0.1\r\n");
 
     // Setup shared memory
     shared_memory_init();
 
-#if 0
-    printf("Bootloader says heey, opening app at %lu\r\n", &__approm_start__);
-    printf("start boot %lu\r\n", &__bootrom_start__);
-    printf("length boot %lu\r\n", &__bootrom_size__);
-    printf("start app %lu\r\n", app_check_address);
-    printf("length app %lu\r\n", &__approm_size__);
-    printf("_sfixed %lu\r\n", &_sfixed);
-    printf("_efixed %lu\r\n", &_efixed);
-#endif
-
     // Should we start app or enter DFU
-    if (!shared_memory_is_dfu_requested())
+    if (!shared_memory_is_dfu_requested() && shared_memory_get_boot_counter() <= MAX_BOOT_ATTEMPTS)
     {
         // Get header information
         const image_hdr_t *hdr = image_get_header(IMAGE_SLOT_1);
 
         // Print waiting message
-        PRINT("Verifying app please wait...\r\n");
+        PRINT("Verifying app...\r\n");
 
         // Validate app in flash
-        if(!crc_verification(IMAGE_SLOT_1, hdr))
-        {
-            PRINT("Application firmware failed CRC verification\r\n");
-            ENDLESS_LOOP
-        }
-
-
-        // Authenticate firmware image using ECDSA-SHA256
-        if(!security_verification(IMAGE_SLOT_1, hdr))
-        {
-            PRINT("Application firmware failed security checks\r\n");
-            ENDLESS_LOOP
-        }
+        bool crc = crc_verification(IMAGE_SLOT_1, hdr);
+        bool ecdsa = security_verification(IMAGE_SLOT_1, hdr);
 
         // Message we passed all checks
-        PRINT("Verified CRC & ECDSA signature of application; attempting to boot app...\r\n\r\n");
+        if(crc && ecdsa)
+        {
+            PRINT("CRC & ECDSA passed booting app...\r\n\r\n");
 
-        // Switch to application
-        app_start(hdr);
+            // Switch to application
+            if(DISABLE_APP == 0 && !app_start(hdr))
+                PRINT("App failed to start\r\n")
+        }
+
+        // App should have booted by the point, we're only here due to a failure
+        // Try to boot again but inc the boot counter
+        shared_memory_increment_boot_counter();
+        system_reset();
     }
 
-    // Update flash
-    // Demo modifying the application firmware
-    // uses the same principle as OTA
-    write_firmware_demo();
-
-    // Clear DFT
+    // Clear DFT flag
     shared_memory_set_dfu_requested(false);
 
+    // Init the updater
+    init_update();
+
+    // Listen for lora
+    bool contiue_listening = true;
+    PRINT("Updater Loaded: ")
+    while (contiue_listening)
+        contiue_listening = listen_update();
+
     // We'll never get here
-    ENDLESS_LOOP
+    system_reset();
 }
