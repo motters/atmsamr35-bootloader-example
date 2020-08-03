@@ -9,6 +9,10 @@
 
 #define LORA_NOT_REQUIRED 0
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum
 {
     SX1276_SLEEP = 0,
@@ -85,3 +89,6 @@ uint32_t SX1276_get_frequency(void);
 #define SX1276_PAYLOAD_CRC_ERROR_FLAG  0x20
 #define SX1276_TRANSMIT_DONE_FLAG      0x08
 
+#ifdef __cplusplus
+}
+#endif

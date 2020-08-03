@@ -6,6 +6,11 @@
 #define PRINT(msg) \
     print(msg, sizeof(msg) -1);
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /**
  * Use of printf to reduce flash usage
  *
@@ -13,3 +18,8 @@
  * @param length
  */
 void print(const char *data, uint8_t length);
+
+
+#ifdef __cplusplus
+}
+#endif

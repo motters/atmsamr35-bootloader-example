@@ -1,6 +1,7 @@
 #include "load_app.h"
 
-#include "print_array.h"
+#include <print_array.h>
+
 #include "rtc_api.h"
 
 static uint32_t* app_check_address_ptr = NULL;

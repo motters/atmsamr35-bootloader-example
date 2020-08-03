@@ -2,8 +2,8 @@
 
 #include <asf.h>
 
-#include "lora/micro-driver-sx1276.h"
-#include "print_array.h"
+#include <lora/micro-driver-sx1276.h>
+#include <print_array.h>
 
 #define V6_ANTENNA_MATCHING_SELECTION_PIN  PIN_PA13
 #define LORA_MAX_TRANSMIT_HANG_MS 1000

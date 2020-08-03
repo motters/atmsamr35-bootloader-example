@@ -49,31 +49,22 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OBJECT_GEN_FLAGS}" CACHE INTERNAL "C Compi
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OBJECT_GEN_FLAGS}" CACHE INTERNAL "C++ Compiler options")
 set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${OBJECT_GEN_FLAGS}" CACHE INTERNAL "ASM Compiler options")
 
-set(ENABLE_TESTING OFF CACHE INTERNAL "")
-set(ENABLE_PROGRAMS OFF CACHE INTERNAL "")
-set(ENABLE_ZLIB_SUPPORT OFF CACHE INTERNAL "")
-set(LINK_WITH_PTHREAD OFF CACHE INTERNAL "")
-set(UNSAFE_BUILD OFF CACHE INTERNAL "")
-set(USE_PKCS11_HELPER_LIBRARY OFF CACHE INTERNAL "")
-set(USE_SHARED_MBEDTLS_LIBRARY OFF CACHE INTERNAL "")
-set(INSTALL_MBEDTLS_HEADERS OFF CACHE INTERNAL "")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMBEDTLS_CONFIG_FILE=\\\"${CMAKE_SOURCE_DIR}/mbedtls_config.h\\\"")
-include_directories(mbedtls/include)
-
-
 # Add libs
 add_subdirectory(ASF ASF)
 add_subdirectory(framework)
 add_subdirectory(boot)
 add_subdirectory(app)
+add_subdirectory(updater)
 
 # Create executable
 add_executable(${PROJECT_NAME}-boot $<TARGET_OBJECTS:boot>)
 add_executable(${PROJECT_NAME}-app $<TARGET_OBJECTS:app>)
+add_executable(${PROJECT_NAME}-updater $<TARGET_OBJECTS:updater>)
 
 # Create executable
 target_link_libraries(${PROJECT_NAME}-boot ASF framework)
 target_link_libraries(${PROJECT_NAME}-app ASF framework)
+target_link_libraries(${PROJECT_NAME}-updater ASF framework)
 
 # Setup linker script for boot loader
 set_target_properties(${PROJECT_NAME}-app PROPERTIES
@@ -87,14 +78,22 @@ set_target_properties(${PROJECT_NAME}-boot PROPERTIES
         LINK_FLAGS "${LINK_FLAGS} -Wl,--start-group -larm_cortexM0l_math -lm -Wl,-Map=${PROJECT_NAME}-boot.map -Wl,--end-group -L${CMAKE_SOURCE_DIR}/ASF/thirdparty/CMSIS/Lib/GCC -L${CMAKE_SOURCE_DIR}/linker -Wl,--gc-sections -mcpu=cortex-m0plus -Tbootloader.ld"
 )
 
+# Setup linker script for application
+set_target_properties(${PROJECT_NAME}-updater PROPERTIES
+        LINKER_SCRIPT samr35j17.ld
+        LINK_FLAGS "${LINK_FLAGS} -Wl,--start-group -larm_cortexM0l_math -lm -Wl,-Map=${PROJECT_NAME}-updater.map -Wl,--end-group -L${CMAKE_SOURCE_DIR}/ASF/thirdparty/CMSIS/Lib/GCC -L${CMAKE_SOURCE_DIR}/linker -Wl,--gc-sections -mcpu=cortex-m0plus -Tsamr35j17.ld"
+)
+
 # Print stats on the elf file
 print_section_sizes(${PROJECT_NAME}-boot)
 print_section_sizes(${PROJECT_NAME}-app)
+print_section_sizes(${PROJECT_NAME}-updater)
 
 # Generate the openocd config files to be used by CLion or command line
 set(BOOTLOADER_OFFSET 0x4000)
 generate_run_gdb_openocd("${PROJECT_NAME}-boot" "0x0000")
 generate_run_gdb_openocd("${PROJECT_NAME}-app" "${BOOTLOADER_OFFSET}")
+generate_run_gdb_openocd("${PROJECT_NAME}-updater" "0x0000")
 
 # Delete previous bin files
 # Important to ensure we program a fresh bin (some windows bug)
@@ -113,6 +112,11 @@ add_custom_command(TARGET ${PROJECT_NAME}-boot ${PROJECT_NAME}-app
         COMMAND DEL ${PROJECT_NAME}-boot-app.bin
         WORKING_DIRECTORY build
         COMMENT "Deleting combined boot and application binary")
+add_custom_command(TARGET ${PROJECT_NAME}-updater
+        PRE_BUILD
+        COMMAND DEL ${PROJECT_NAME}-updater.bin ${PROJECT_NAME}-updater.hex
+        WORKING_DIRECTORY build
+        COMMENT "Deleting auto generated files from updater elf")
 
 # Build binary files straight after the application has been built.
 add_custom_command(TARGET ${PROJECT_NAME}-app
@@ -128,6 +132,12 @@ add_custom_command(TARGET ${PROJECT_NAME}-boot
         COMMAND ${CMAKE_OBJCOPY} --pad-to=${BOOTLOADER_OFFSET} --gap-fill=0xFF -Obinary ${PROJECT_NAME}-boot ${PROJECT_NAME}-boot.bin
         WORKING_DIRECTORY build
         COMMENT "Generating bin file from boot elf")
+add_custom_command(TARGET ${PROJECT_NAME}-updater
+        POST_BUILD
+        DEPENDS ${PROJECT_NAME}-updater
+        COMMAND ${CMAKE_OBJCOPY} -Obinary ${PROJECT_NAME}-updater ${PROJECT_NAME}-updater.bin
+        WORKING_DIRECTORY build
+        COMMENT "Generating bin file from updater elf")
 
 # Create a single binary file containing bootloader and application
 add_custom_command(TARGET ${PROJECT_NAME}-app

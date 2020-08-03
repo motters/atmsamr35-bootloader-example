@@ -1,7 +1,6 @@
 #include "update.h"
 
-#include "rtc_api.h"
-
+#include <rtc_api.h>
 #include <shared_memory.h>
 #include <flash.h>
 

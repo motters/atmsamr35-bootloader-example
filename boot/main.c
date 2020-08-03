@@ -5,10 +5,10 @@
 #include <flash.h>
 #include <image.h>
 #include <shared_memory.h>
+#include <print_array.h>
 
 #include "load_app.h"
 #include "verify.h"
-#include "print_array.h"
 #include "update.h"
 #include "rtc_api.h"
 
