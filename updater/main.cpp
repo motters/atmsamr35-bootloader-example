@@ -114,8 +114,16 @@ int main()
 {
     configASF();
 
+    // http://patorjk.com/software/taag/#p=display&h=0&v=0&f=Ivrit&t=Edge%20Updater (Ivrit)  Larry 3D
+    printf("  _____       _                    _   _               _           _                 \r\n"
+          " | ____|   __| |   __ _    ___    | | | |  _ __     __| |   __ _  | |_    ___   _ __ \r\n"
+          " |  _|    / _` |  / _` |  / _ \\   | | | | | '_ \\   / _` |  / _` | | __|  / _ \\ | '__|\r\n"
+          " | |___  | (_| | | (_| | |  __/   | |_| | | |_) | | (_| | | (_| | | |_  |  __/ | |   \r\n"
+          " |_____|  \\__,_|  \\__, |  \\___|    \\___/  | .__/   \\__,_|  \\__,_|  \\__|  \\___| |_|   \r\n"
+          "                  |___/                   |_|                                        \r\n");
+
     // Welcome message
-    PRINT("Edge Updater\r\n");
+    PRINT("Version 0.0.1\r\n\r\n$ ");
 
     // Setup lora
     init_lora();
@@ -153,7 +161,10 @@ int main()
                     // Print the reply
                     printf("Registering update id %d to edge %lu\r\n", id, edgeId);
                 }
-
+                else
+                {
+                    printf("Incorrect parameters\r\n");
+                }
             }
             else if(strstr(serial_buffer, "UPDATE") != NULL)
             {
@@ -172,6 +183,10 @@ int main()
 
                     // Print the reply
                     printf("Updating edge %lu with update %d\r\n", edgeId, id);
+                }
+                else
+                {
+                    printf("Incorrect parameters\r\n");
                 }
 
             }
@@ -193,6 +208,10 @@ int main()
                     // Print the reply
                     printf("Rebooting edges registered to update %d\r\n", id);
                 }
+                else
+                {
+                    printf("Incorrect parameters\r\n");
+                }
             }
             else if(strstr(serial_buffer, "VERIFY") != NULL)
             {
@@ -212,11 +231,18 @@ int main()
                     // Print the reply
                     printf("Verifying packet that have been wrote to edge registered at %d\r\n", id);
                 }
+                else
+                {
+                    printf("Incorrect parameters\r\n");
+                }
             }
             else
             {
-                PRINT("Unknown command\r\n");
+                PRINT("Unknown command\r\n\r\n$ ");
             }
+
+            // New command line
+            PRINT("\r\n$ ");
 
             // Clear array
             serial_clear();
