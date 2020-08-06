@@ -30,4 +30,5 @@ python cmake/create_key.py DEBUG
   * https://github.com/armmbed/mbed-os-example-lorawan-fuota
   * https://github.com/B-Con/crypto-algorithms
   * https://github.com/kmackay/micro-ecc
+  * https://github.com/Jamesits/bin2array
   * http://ww1.microchip.com/downloads/en/AppNotes/Atmel-42141-SAM-AT02333-Safe-and-Secure-Bootloader-Implementation-for-SAM3-4_Application-Note.pdf

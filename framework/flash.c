@@ -122,7 +122,7 @@ void update_page(uint32_t page, uint8_t *change_page_buffer)
     for(int row = 0; row < NVMCTRL_ROW_PAGES; row++)
     {
         // Find address
-        uint32_t address = root_address + (row * NVMCTRL_PAGE_SIZE);
+        volatile uint32_t address = root_address + (row * NVMCTRL_PAGE_SIZE);
 
         // Wait until we can read
         error_code = STATUS_BUSY;

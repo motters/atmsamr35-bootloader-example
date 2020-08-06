@@ -152,3 +152,13 @@ add_custom_command(TARGET ${PROJECT_NAME}-boot
         COMMAND copy /b /Y \"${PROJECT_NAME}-boot.bin\"+\"${PROJECT_NAME}-app.bin\" ${PROJECT_NAME}-boot-app.bin
         WORKING_DIRECTORY build
         COMMENT "Generating combined bootloader and application binary file with correct offsets")
+
+
+# Create the firmware upgrade C array
+add_custom_command(TARGET ${PROJECT_NAME}-updater
+        PRE_BUILD
+        DEPENDS ${PROJECT_NAME}-app.bin
+        COMMAND python ../../cmake/bin-to-array.py SAMR35-app.bin ../../updater/app_firmware_auto_gen.h
+        WORKING_DIRECTORY build
+        COMMENT "Creating firmware array for upgrader")
+#

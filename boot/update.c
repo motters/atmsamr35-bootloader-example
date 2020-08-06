@@ -22,6 +22,7 @@ static void reset_lora(void)
         LORA_DEFAULT_AMP_USES_RFO
     );
     SX1276_set_device_mode(SX1276_RECEIVE_CONTINUOUS);
+    PRINT("LORARESET\n")
 }
 
 static void handle_lora_message(uint8_t* message, uint8_t message_length)
@@ -46,8 +47,8 @@ static void handle_lora_message(uint8_t* message, uint8_t message_length)
         // Update slot
         case 1:
         {
-            // Update flash
-            update_page( message[2], &message[3]);
+            volatile uint32_t pageid = message[2]+64;
+            update_page( pageid, &message[3]);
             uint8_t reply[] = {message[0], 1, 1};
             SX1276_send_message(reply, sizeof(reply));
 
@@ -125,8 +126,6 @@ static void receive_lora_message(void)
         uint8_t lora_message_len = SX1276_receive_message(lora_receive_buf);
         handle_lora_message(lora_receive_buf, lora_message_len);
     }
-
-    SX1276_clear_recieve_done_flag();
 }
 
 bool init_update(void)
@@ -163,14 +162,24 @@ bool listen_update(void)
     if (lora_flags & SX1276_RECEIVE_DONE_FLAG)
     {
         receive_lora_message();
+        SX1276_clear_recieve_done_flag();
+        while(SX1276_read_interrupt_flags() & (uint8_t) SX1276_RECEIVE_DONE_FLAG)
+        {
+        }
     }
 
     if (lora_flags & SX1276_TRANSMIT_DONE_FLAG)
     {
         // Set device back to continuous receive
         SX1276_set_device_mode(SX1276_RECEIVE_CONTINUOUS);
+        while(SX1276_get_device_mode() != SX1276_RECEIVE_CONTINUOUS)
+        {
+        }
 
         SX1276_clear_transmit_done_flag();
+        while(SX1276_read_interrupt_flags() & (uint8_t) SX1276_TRANSMIT_DONE_FLAG)
+        {
+        }
     }
 
     // Check for LoRa module stuck in non-receive mode
@@ -180,26 +189,28 @@ bool listen_update(void)
     }
     else if((rtc_api_count() - last_receive_mode_time) > LORA_MAX_TRANSMIT_HANG_MS)
     {
+        PRINT("+")
         reset_lora();
     }
 
     // Handle all lora errors
-    if ((lora_flags & SX1276_PAYLOAD_CRC_ERROR_FLAG) ||
+    if (/*(lora_flags & SX1276_PAYLOAD_CRC_ERROR_FLAG) ||*/
         (SX1276_read_interrupt_flags() & SX1276_TRANSMIT_DONE_FLAG) ||
         (SX1276_read_interrupt_flags() & SX1276_RECEIVE_DONE_FLAG))
     {
-        reset_lora();
+        //PRINT("-")
+        //reset_lora();
     }
 
     // Print to serial to show we're still alive
-    if((rtc_api_count() - serial_heart_beat) > 2000)
+    if((rtc_api_count() - serial_heart_beat) > 500)
     {
         serial_heart_beat = rtc_api_count();
         PRINT(".")
     }
 
     // Reset if no lora coms for 20 seconds
-    if((rtc_api_count() - lora_heart_beat) > 20000)
+    if((rtc_api_count() - lora_heart_beat) > 60000)
     {
         PRINT("\r\nLora silent rebooting...\r\n")
         return false;

@@ -36,7 +36,7 @@ MEMORY
  * How large should the stack size be?
  * This depend how much memory is statically allocated by the firmware
  */
-STACK_SIZE = DEFINED(STACK_SIZE) ? STACK_SIZE : DEFINED(__stack_size__) ? __stack_size__ : 0x2000;
+STACK_SIZE = DEFINED(STACK_SIZE) ? STACK_SIZE : DEFINED(__stack_size__) ? __stack_size__ : 0x1000;
 
 
 /**
